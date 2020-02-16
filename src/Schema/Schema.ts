@@ -1,6 +1,7 @@
-import { ObjectId } from 'mongodb';
+import { Db, ObjectId } from 'mongodb';
+import { Document } from '../Document/Document';
 
-type FieldType = StringConstructor | BooleanConstructor | DateConstructor | ArrayConstructor | typeof ObjectId;
+type FieldType = "string" | "number" | "object" | typeof ObjectId;
 
 interface SchemaModel {
   [key: string]: {
@@ -20,5 +21,69 @@ export class Schema {
   //TODO:
   //HOOKS
   //Paths validation
-  //Interface creation  here
+
+  private validate(document: any) {
+
+    const schema = this._schema,
+      sanitizedDoc: any = {};
+
+    for (const field in schema) {
+
+      if (schema[field].required) {
+
+        if (!document[field] && !schema[field].default) throw new Error(`${field} field is required`);
+
+        if (!document[field]) {
+
+          if (schema[field].type !== typeof schema[field].default) {
+
+            throw new Error(`${field} must be type of ${schema[field].type}`);
+
+          }
+
+          document[field] = schema[field].default;
+
+        }
+
+      }
+
+      if (document[field]) {
+
+        sanitizedDoc[field] = document[field];
+
+      }
+    }
+
+    return sanitizedDoc;
+
+  }
+
+  /** @internal */
+  public async setupCollection(collectionName: string, db: Db) {
+
+    const schema = this._schema;
+
+    for (const field in schema) {
+
+      if (schema[field].unique) {
+
+        const collection = await db.createCollection(collectionName);
+
+        const index: any = {};
+        index[field] = 1;
+
+        collection.createIndex(index, { unique: true });
+
+      }
+
+    }
+
+  }
+
+  public createDocument(collectionName: string, document: any): Document {
+
+    return new Document(collectionName, this.validate(document));
+
+  }
+
 }

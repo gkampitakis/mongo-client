@@ -2,3 +2,4 @@ node_modules
 lib
 .npmrc
 .node-dev.json
+.vscode
