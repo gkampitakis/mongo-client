@@ -36,7 +36,6 @@ class MongoDriver {
   //FIXME: README
   //FIXME: jenkins file
   //TODO: populate ??
-  //TODO: return a document where you can have specific functionality
 }
 
 export const _MongoDriver = MongoDriver.getInstance();

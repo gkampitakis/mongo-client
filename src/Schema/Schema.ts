@@ -1,5 +1,4 @@
 import { Db, ObjectId } from 'mongodb';
-import { Document } from '../Document/Document';
 
 type FieldType = "string" | "number" | "object" | typeof ObjectId;
 
@@ -22,7 +21,8 @@ export class Schema {
   //HOOKS
   //Paths validation
 
-  private validate(document: any) {
+  /** @internal */
+  public validate(document: any) {
 
     const schema = this._schema,
       sanitizedDoc: any = {};
@@ -77,12 +77,6 @@ export class Schema {
       }
 
     }
-
-  }
-
-  public createDocument(collectionName: string, document: any): Document {
-
-    return new Document(collectionName, this.validate(document));
 
   }
 

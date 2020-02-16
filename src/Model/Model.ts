@@ -63,11 +63,11 @@ export class Model {
 
       try {
 
-        const wrapperDoc = this.schema.createDocument(this.collectionName, document);
+        const wrappedDoc = new Document(this.collectionName, document, this.schema);
 
-        await this.collection.insertOne(wrapperDoc.document);
+        await this.collection.insertOne(wrappedDoc.document);
 
-        resolve(wrapperDoc);
+        resolve(wrappedDoc);
 
       } catch (error) {
 
@@ -95,9 +95,8 @@ export class Model {
 
     return await Model.database.listCollections({ name: collectionName }).hasNext();
 
-
   }
 
 }
 
-//TODO: we need to think the hierarchy and the concers of each one
+//TODO: one general mongoinstance with share things inside
