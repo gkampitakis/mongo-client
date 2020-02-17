@@ -1,6 +1,5 @@
 import mongodb, { Db, MongoClient, MongoClientOptions } from 'mongodb';
-import { Model } from '../Model/Model';
-import { Document } from '../Document/Document';
+import { MongoInstance } from '../MongoInstance/MongoInstance';
 import { Logger } from '@gkampitakis/tslog';
 
 class MongoDriver {
@@ -25,8 +24,7 @@ class MongoDriver {
       this.logger.info(`Connected to ${database}`);
       this.db = client.db(database);
 
-      Model.setDb(this.db);
-      Document.setDb(this.db);
+      MongoInstance.setDb(this.db);
 
       return;
     });

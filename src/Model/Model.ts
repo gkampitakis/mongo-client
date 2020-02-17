@@ -1,29 +1,20 @@
 import { Schema } from '../Schema/Schema';
-import { Collection, Db, FilterQuery, FindOneAndUpdateOption, ObjectID, ObjectId } from 'mongodb';
-import { Logger } from "@gkampitakis/tslog";
+import { Collection, FilterQuery, FindOneAndUpdateOption, ObjectID, ObjectId } from 'mongodb';
 import { Document } from '../Document/Document';
+import { MongoInstance } from "../MongoInstance/MongoInstance";
 
-export class Model {
-  private collection: Collection;
-  private collectionName: string;
-  private schema: Schema;
-  private static database: Db;
-  private logger: Logger;
+
+export class Model extends MongoInstance {
+
+  private readonly collection: Collection;
 
   public constructor(collectionName: string, schema: Schema) {
-    this.logger = new Logger('MongoDriver', true);
+
+    super(collectionName, schema);
 
     this.collection = Model.database.collection(collectionName);
-    this.collectionName = collectionName;
-    this.schema = schema;
-
     this.prepareCollection(collectionName, schema);
 
-  }
-
-  /** @internal */
-  static setDb(db: Db) {
-    if (!Model.database) Model.database = db;
   }
 
   public findOne(query: any): Promise<any> {
@@ -63,7 +54,7 @@ export class Model {
 
       try {
 
-        const wrappedDoc = new Document(this.collectionName, document, this.schema);
+        const wrappedDoc = Document(this.collectionName, document, this.schema);
 
         await this.collection.insertOne(wrappedDoc.document);
 
@@ -98,5 +89,3 @@ export class Model {
   }
 
 }
-
-//TODO: one general mongoinstance with share things inside
