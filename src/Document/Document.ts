@@ -1,19 +1,20 @@
-import { Db, ObjectID } from 'mongodb';
+/* eslint-disable @typescript-eslint/class-name-casing */
+import { ObjectID } from 'mongodb';
 import { Schema } from "../Schema/Schema";
+import { MongoInstance } from "../MongoInstance/MongoInstance";
 
-export class Document {
+/** @internal */
+export class _Document extends MongoInstance {
 
   public document: any;
-  private _collectionName: string;
-  private schema: Schema;
-  private static database: Db;
 
-  public constructor(collection: string, doc: any, schema: Schema) {
-    this._collectionName = collection;
+  public constructor(collectionName: string, doc: any, schema: Schema) {
+
+    super(collectionName, schema);
+
     this.document = doc;
-    this.schema = schema;
-
     this.schema.validate(doc);
+
   }
 
   get collectionName(): string {
@@ -22,14 +23,9 @@ export class Document {
 
   }
 
-  /** @internal */
-  static setDb(db: Db) {
-    if (!Document.database) Document.database = db;
-  }
-
   public remove(): Promise<any> {
 
-    const collection = Document.database.collection(this.collectionName);
+    const collection = _Document.database.collection(this.collectionName);
 
     return collection.deleteOne({ _id: new ObjectID(this.document._id) });
 
@@ -39,12 +35,38 @@ export class Document {
 
     console.log('saving doc');
 
-
   }
 
-  public lean() {
+  public lean(): void {
     console.log('leaning doc');
 
   }
 
+}
+
+/** @internal */
+export function stripObject(document: _Document): Document {
+
+  return {
+    document: document.document,
+    lean: document.lean,
+    save: document.save,
+    remove: document.remove,
+    collectionName: document.collectionName
+  };
+
+}
+//TODO: this overhead might be deleted in the future by making document simpler
+export function Document(collectionName: string, document: any, schema: Schema): Document {
+
+  return stripObject(new _Document(collectionName, document, schema));
+
+}
+
+export interface Document {
+  document: any;
+  lean: () => void;
+  save: () => void;
+  remove: () => Promise<any>;
+  collectionName: string;
 }
