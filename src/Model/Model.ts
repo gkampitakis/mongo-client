@@ -1,20 +1,16 @@
 import { Schema } from '../Schema/Schema';
 import { Collection, FilterQuery, FindOneAndUpdateOption, ObjectID, ObjectId } from 'mongodb';
 import { Document } from '../Document/Document';
-import { MongoInstance } from "../MongoInstance/MongoInstance";
-
+import { MongoInstance } from '../MongoInstance/MongoInstance';
 
 export class Model extends MongoInstance {
-
   private readonly collection: Collection;
 
   public constructor(collectionName: string, schema: Schema) {
-
     super(collectionName, schema);
 
     this.collection = Model.database.collection(collectionName);
     this.prepareCollection(collectionName, schema);
-
   }
 
   public findOne(query: any): Promise<any> {
@@ -49,43 +45,30 @@ export class Model extends MongoInstance {
   }
 
   public create(document: any): Promise<Document> {
-
     return new Promise(async (resolve, reject) => {
-
       try {
-
         const wrappedDoc = Document(this.collectionName, document, this.schema);
 
         await this.collection.insertOne(wrappedDoc.document);
 
         resolve(wrappedDoc);
-
       } catch (error) {
-
         this.logger.error(error.message);
 
         reject(error);
-
       }
-
     });
-
   }
 
   private async prepareCollection(collectionName: string, schema: Schema): Promise<any> {
-
     const collectionExists = await this.collectionExists(collectionName);
 
     if (collectionExists) return;
 
     schema.setupCollection(collectionName, Model.database);
-
   }
 
   private async collectionExists(collectionName: string) {
-
     return await Model.database.listCollections({ name: collectionName }).hasNext();
-
   }
-
 }
