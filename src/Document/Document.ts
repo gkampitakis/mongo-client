@@ -5,13 +5,13 @@ import { MongoInstance } from '../MongoInstance/MongoInstance';
 
 /** @internal */
 export class _Document extends MongoInstance {
-  public document: any;
+  public data: any;
 
-  public constructor(collectionName: string, doc: any, schema: Schema) {
+  public constructor(collectionName: string, data: any, schema: Schema) {
     super(collectionName, schema);
 
-    this.document = doc;
-    this.schema.validate(doc);
+    this.data = data;
+    this.schema.validate(data);
   }
 
   get collectionName(): string {
@@ -21,22 +21,35 @@ export class _Document extends MongoInstance {
   public remove(): Promise<any> {
     const collection = _Document.database.collection(this.collectionName);
 
-    return collection.deleteOne({ _id: new ObjectID(this.document._id) });
+    return collection.deleteOne({ _id: new ObjectID(this.data._id) });
   }
 
-  public save() {
-    console.log('saving doc');
+  public async save(): Promise<any> {
+
+    const collection = _Document.database.collection(this.collectionName);
+
+    this.data._id = this.data._id || new ObjectID();
+
+    //TODO: validation here on the document passed ignore _id and __v 
+
+    return await collection.updateOne({
+      _id: new ObjectID(this.data._id)
+    }, { $set: this.data }, { upsert: true });
+
   }
 
-  public lean(): void {
-    console.log('leaning doc');
+  public lean() {
+
+    return this.data;
+
   }
+
 }
 
 /** @internal */
 export function stripObject(document: _Document): Document {
   return {
-    document: document.document,
+    data: document.data,
     lean: document.lean,
     save: document.save,
     remove: document.remove,
@@ -44,13 +57,13 @@ export function stripObject(document: _Document): Document {
   };
 }
 //TODO: this overhead might be deleted in the future by making document simpler
-export function Document(collectionName: string, document: any, schema: Schema): Document {
-  return stripObject(new _Document(collectionName, document, schema));
+export function Document(collectionName: string, data: any, schema: Schema): Document {
+  return stripObject(new _Document(collectionName, data, schema));
 }
 
-export interface Document {
-  document: any;
-  lean: () => void;
+export interface Document<data = any> {
+  data: data;
+  lean: () => data;
   save: () => void;
   remove: () => Promise<any>;
   collectionName: string;

@@ -8,13 +8,13 @@ export class Model extends MongoInstance {
 
   public constructor(collectionName: string, schema: Schema) {
     super(collectionName, schema);
-
-    this.collection = Model.database.collection(collectionName);
+    //TODO:: create a map like structure to save all the models no need to be reinstanciated 
+    this.collection = Model.database.collection(collectionName); //TODO: this will cause issues we need to leave this out of constructor
     this.prepareCollection(collectionName, schema);
   }
 
   public findOne(query: any): Promise<any> {
-    //TODO: return document wrapped object
+    //TODO: return document wrapped object 
     //Shcema wrap document internal method
     return this.collection.findOne(query);
   }
@@ -39,17 +39,18 @@ export class Model extends MongoInstance {
     return this.collection.deleteMany(filter);
   }
 
-  public instance() {
-    //Returns a document
-    //Wrap document with no data
+  public instance(data: any): Document {
+
+    return Document(this.collectionName, data, this.schema);
+
   }
 
-  public create(document: any): Promise<Document> {
+  public create(data: any): Promise<Document> {
     return new Promise(async (resolve, reject) => {
       try {
-        const wrappedDoc = Document(this.collectionName, document, this.schema);
+        const wrappedDoc = Document(this.collectionName, data, this.schema);
 
-        await this.collection.insertOne(wrappedDoc.document);
+        await this.collection.insertOne(wrappedDoc.data);
 
         resolve(wrappedDoc);
       } catch (error) {

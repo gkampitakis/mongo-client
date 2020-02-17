@@ -75,10 +75,23 @@ MongoDriver.connect('mongodb://localhost:27017', 'mongoDriver', {
       //   username: '13'
       // });
 
-      const testDocument = Document('Test', { test: '55555' }, test);
-      testDocument.save();
+
+
+      const testDocument: Document<Test> = Document('Test', { test: '55555' }, test);
+      const result = await testDocument.save();
+      console.log(testDocument);
+      console.log(testDocument.lean());
+
+      testDocument.data.test = '1111';
+
+      testDocument.data.test = '222'
+
+
+      await testDocument.save();
+
       console.log(testDocument);
 
+      //TODO: types at document
 
       // await result2.remove();
 
@@ -96,3 +109,7 @@ MongoDriver.connect('mongodb://localhost:27017', 'mongoDriver', {
     console.log(err);
 
   });
+
+interface Test {
+  test: string;
+}
