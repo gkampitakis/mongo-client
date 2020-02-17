@@ -22,7 +22,7 @@ export class Schema {
   //Paths validation
 
   /** @internal */
-  public validate(document: any) {
+  public validate(document: any) {//TODO: this needs more testing
 
     const schema = this._schema,
       sanitizedDoc: any = {};
@@ -35,12 +35,6 @@ export class Schema {
 
         if (!document[field]) {
 
-          if (schema[field].type !== typeof schema[field].default) {
-
-            throw new Error(`${field} must be type of ${schema[field].type}`);
-
-          }
-
           document[field] = schema[field].default;
 
         }
@@ -48,6 +42,12 @@ export class Schema {
       }
 
       if (document[field]) {
+
+        if (schema[field].type !== typeof document[field]) {
+
+          throw new Error(`${field} must be type of ${schema[field].type}`);
+
+        }
 
         sanitizedDoc[field] = document[field];
 
