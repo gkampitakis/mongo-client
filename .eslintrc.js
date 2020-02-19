@@ -9,15 +9,15 @@ module.exports = {
         ignoreCase: false,
         ignoreDeclarationSort: true,
         ignoreMemberSort: false,
-        memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single'],
-      },
+        memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single']
+      }
     ],
     'no-multiple-empty-lines': [
       'error',
       {
         max: 2,
-        maxEOF: 1,
-      },
+        maxEOF: 1
+      }
     ],
     '@typescript-eslint/interface-name-prefix': ['error', 'never'],
     '@typescript-eslint/explicit-function-return-type': ['off'],
@@ -30,14 +30,14 @@ module.exports = {
       'error',
       {
         code: 150,
-        tabWidth: 4,
-      },
+        tabWidth: 4
+      }
     ],
     'object-shorthand': ['off'],
     radix: ['off'],
     'no-console': [1],
     'no-shadow': ['off'],
     'prefer-const': 2,
-    semi: [2, 'always'],
-  },
+    semi: [2, 'always']
+  }
 };

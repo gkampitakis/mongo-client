@@ -1,21 +1,20 @@
 import { Schema } from '../Schema/Schema';
-import { Collection, FilterQuery, FindOneAndUpdateOption, ObjectID, ObjectId } from 'mongodb';
+import { FilterQuery, FindOneAndUpdateOption, ObjectID, ObjectId } from 'mongodb';
 import { Document } from '../Document/Document';
 import { MongoInstance } from '../MongoInstance/MongoInstance';
 
 export class Model extends MongoInstance {
-  private readonly collection: Collection;
 
   public constructor(collectionName: string, schema: Schema) {
     super(collectionName, schema);
     //TODO:: create a map like structure to save all the models no need to be reinstanciated 
-    this.collection = Model.database.collection(collectionName); //TODO: this will cause issues we need to leave this out of constructor
     this.prepareCollection(collectionName, schema);
   }
 
   public findOne(query: any): Promise<any> {
     //TODO: return document wrapped object 
     //Shcema wrap document internal method
+
     return this.collection.findOne(query);
   }
 
@@ -39,13 +38,13 @@ export class Model extends MongoInstance {
     return this.collection.deleteMany(filter);
   }
 
-  public instance(data: any): Document {
+  public instance<Generic>(data: Generic): Document {
 
-    return Document(this.collectionName, data, this.schema);
+    return Document<Generic>(this.collectionName, data, this.schema);
 
   }
 
-  public create(data: any): Promise<Document> {
+  public create<Generic>(data: Generic): Promise<Document<Generic>> {
     return new Promise(async (resolve, reject) => {
       try {
         const wrappedDoc = Document(this.collectionName, data, this.schema);

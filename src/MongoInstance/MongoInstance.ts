@@ -1,10 +1,10 @@
 import { Logger } from '@gkampitakis/tslog';
 import { Schema } from '../Schema/Schema';
-import { Db } from 'mongodb';
+import { Collection, Db } from 'mongodb';
 import { Document, _Document, stripObject } from '../Document/Document';
 
 export abstract class MongoInstance {
-  protected readonly _collectionName: string;
+  private readonly _collectionName: string;
   protected readonly logger: Logger;
   protected readonly schema: Schema;
   protected static database: Db;
@@ -17,6 +17,13 @@ export abstract class MongoInstance {
 
   get collectionName(): string {
     return this._collectionName;
+  }
+
+  protected get collection(): Collection {
+
+    if (!MongoInstance.database) throw new Error('MongoDriver not correctly initialized');
+
+    return MongoInstance.database.collection(this._collectionName);
   }
 
   /** @internal */
