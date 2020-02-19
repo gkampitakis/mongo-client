@@ -7,13 +7,12 @@ export class Model extends MongoInstance {
 
   public constructor(collectionName: string, schema: Schema) {
     super(collectionName, schema);
-    //TODO:: create a map like structure to save all the models no need to be reinstanciated 
     this.prepareCollection(collectionName, schema);
   }
 
   public findOne(query: any): Promise<any> {
     //TODO: return document wrapped object 
-    //Shcema wrap document internal method
+    //Schema wrap document internal method
 
     return this.collection.findOne(query);
   }
@@ -38,7 +37,7 @@ export class Model extends MongoInstance {
     return this.collection.deleteMany(filter);
   }
 
-  public instance<Generic>(data: Generic): Document {
+  public instance<Generic>(data: Generic): Document<Generic> {
 
     return Document<Generic>(this.collectionName, data, this.schema);
 
@@ -72,3 +71,22 @@ export class Model extends MongoInstance {
     return await Model.database.listCollections({ name: collectionName }).hasNext();
   }
 }
+
+
+/**
+ *  ------------ BACKLOG ------------
+ *
+ *  Implement all CRUD functions
+ *  Implement all functions used at personal projects
+ *  Return wrapped document objects
+ *  Return Correct types
+ *  //TODO:: create a map like structure to save all the models no need to be re-instantiated
+ *  //TODO: here the byId functions should take both string or ObjectID
+ *  //TODO: find the way that you write comments and they are shown above in the editor
+ *  //TODO: create unique index for searching - add this support to schema
+ *  //TODO: benchmarks
+ *  //TODO: schema validation wherever needed
+ *  //TODO: add support for ignoring schema validation and make sure when this happens it is actually with less boiler plate code
+ *  Jest tests
+ *
+ */

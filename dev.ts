@@ -1,6 +1,6 @@
 import { Schema, MongoDriver, Model, Document } from "./index";
 
-const user = new Schema({
+const userSchema = new Schema({
 
   username: {
     required: true,
@@ -35,14 +35,6 @@ const user = new Schema({
   // }
 });
 
-const test = new Schema({
-
-  test: {
-    type: 'string'
-  }
-
-});
-
 MongoDriver.connect('mongodb://localhost:27017', 'mongoDriver', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -51,51 +43,19 @@ MongoDriver.connect('mongodb://localhost:27017', 'mongoDriver', {
 
     try {
 
-      // const userModel = new Model('User', user);
+      const userModel = new Model('User', userSchema);
 
-      // // const result = await userModel.findById('5e4706f297faab445cc63a58');
-      // // console.log(result);
+      const newUser = await userModel.create({ username: 'George' });
 
-      // // const result2 = await userModel.findByIdAndUpdate('5e4706f297faab445cc63a58', {
-      // //   email: 'test@gmail.com'
-      // // }, { returnOriginal: false });
+      console.log(newUser);
 
-      // // console.log(result2);
-
-
-      // const result = await userModel.create({
-      //   username: '11'
-      // });
-
-      // const result2 = await userModel.create({
-      //   username: '12'
-      // });
-
-      // const result3 = await userModel.create({
-      //   username: '13'
-      // });
+      const test = userModel.instance({ username: 'test' });
+      console.log(test);
+      console.log(await test.save());//BUG: this should return just a boolean value or something else
 
 
+      console.log(test.data._id);
 
-      const testDocument: Document<Test> = Document('Test', { test: '55555' }, test);
-      const result = await testDocument.save();
-      console.log(testDocument);
-      console.log(testDocument.lean());
-
-      testDocument.data.test = '1111';
-
-      testDocument.data.test = '222'
-
-
-      await testDocument.save();
-
-      console.log(testDocument);
-
-      //TODO: types at document
-
-      // await result2.remove();
-
-      // console.log(result2);
 
     } catch (error) {
 
@@ -113,3 +73,17 @@ MongoDriver.connect('mongodb://localhost:27017', 'mongoDriver', {
 interface Test {
   test: string;
 }
+
+
+/**
+ *    ------------ BACKLOG ------------
+ *
+ * .save() //BUG: the returning value is off the place needs change check what it should return
+ * Example
+ * const test = userModel.instance({ username: 'test' });
+ * console.log(test);
+ * console.log(await test.save());
+ * console.log(test.data._id);
+ *
+ *
+ */

@@ -32,7 +32,7 @@ export class _Document<Generic extends { _id?: string | ObjectID } = any> extend
 
   }
 
-  public lean = (): Generic => {
+  public lean = () => {
 
     return this.data;
 
@@ -56,9 +56,19 @@ export function Document<Generic>(collectionName: string, data: Generic, schema:
 }
 
 export interface Document<data = any> {
-  data: { _id?: string } & data;
-  lean: () => data;
+  data: { _id?: string | ObjectID } & data;
+  lean: () => { _id?: string | ObjectID } & data;
   save: () => void;
   remove: () => Promise<any>;
   collectionName: string;
 }
+
+
+/**
+ *
+ * ------------ BACKLOG ------------
+ * //TODO: all supported functions
+ * //TODO: schema validation wherever needed
+ *
+ *
+ */
