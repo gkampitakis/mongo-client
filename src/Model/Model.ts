@@ -1,5 +1,6 @@
+import { isEmptyObject, objectID } from "../Utils/Utils";
+import { FilterQuery, FindOneAndUpdateOption } from 'mongodb';
 import { Schema } from '../Schema/Schema';
-import { FilterQuery, FindOneAndUpdateOption, ObjectID, ObjectId } from 'mongodb';
 import { Document } from '../Document/Document';
 import { MongoInstance } from '../MongoInstance/MongoInstance';
 
@@ -11,30 +12,69 @@ export class Model extends MongoInstance {
   }
 
   public findOne(query: any): Promise<any> {
-    //TODO: return document wrapped object 
-    //Schema wrap document internal method
 
-    return this.collection.findOne(query);
+    return new Promise(async (resolve, reject) => {
+      try {
+
+        const result = this.collection.findOne(query);
+
+
+        if (!result) return resolve(null);
+
+        const wrappedDoc = Document(this.collectionName, result, this.schema);
+
+        resolve(wrappedDoc);
+
+      } catch (error) {
+
+        reject(error);
+
+      }
+    });
   }
 
-  public findById(id: string) {
-    //TODO: return document wrapped object
+  public findById(id: string): Promise<Document | null> {
 
-    if (!ObjectID.isValid(id)) throw new Error('Invalid id provided');
+    const _id = objectID(id);
 
-    return this.collection.findOne({ _id: new ObjectId(id) });
+    return this.findOne({ _id });
+
   }
 
   public findByIdAndUpdate(id: string, update: any, options?: FindOneAndUpdateOption) {
-    //TODO: return document wrapped object
 
-    if (!ObjectID.isValid(id)) throw new Error('Invalid id provided');
+    const _id = objectID(id);
 
-    return this.collection.findOneAndUpdate({ _id: new ObjectId(id) }, { $set: update }, options);
+    return new Promise(async (resolve, reject) => {
+      try {
+
+        const validData = this.schema.sanitizeData(update);
+
+        if (isEmptyObject(validData)) return resolve(null);
+
+        this.schema.isValid(update, true);
+
+        const result = await this.collection.findOneAndUpdate({ _id }, { $set: validData }, options);
+
+        if (!result) return resolve(null);
+
+        const wrappedDoc = Document(this.collectionName, result.value, this.schema);
+
+        resolve(wrappedDoc);
+
+      } catch (error) {
+
+        reject(error);
+
+      }
+    });
+
   }
 
   public deleteMany(filter: FilterQuery<any>) {
+
     return this.collection.deleteMany(filter);
+
   }
 
   public instance<Generic>(data: Generic): Document<Generic> {
@@ -70,18 +110,18 @@ export class Model extends MongoInstance {
   private async collectionExists(collectionName: string) {
     return await Model.database.listCollections({ name: collectionName }).hasNext();
   }
-}
 
+}
 
 /**
  *  ------------ BACKLOG ------------
  *
- *  Implement all CRUD functions
  *  Implement all functions used at personal projects
- *  Return wrapped document objects
+ *  Start writing the tests and then continue with everything else
+ *  Create the Util package and the autobind method
+ *
  *  Return Correct types
  *  //TODO:: create a map like structure to save all the models no need to be re-instantiated
- *  //TODO: here the byId functions should take both string or ObjectID
  *  //TODO: find the way that you write comments and they are shown above in the editor
  *  //TODO: create unique index for searching - add this support to schema
  *  //TODO: benchmarks

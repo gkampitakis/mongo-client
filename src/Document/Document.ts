@@ -10,8 +10,8 @@ export class _Document<Generic extends { _id?: string | ObjectID } = any> extend
   public constructor(collectionName: string, data: Generic, schema: Schema) {
     super(collectionName, schema);
 
-    this.data = data;
-    this.schema.validate(data);
+    this.data = this.schema.sanitizeData(data);
+    this.schema.isValid(data);
   }
 
   public remove = (): Promise<{}> => {
@@ -23,8 +23,6 @@ export class _Document<Generic extends { _id?: string | ObjectID } = any> extend
   public save = async (): Promise<{}> => {
 
     this.data._id = this.data._id || new ObjectID();
-
-    //TODO: validation here on the document passed ignore _id and __v 
 
     return await this.collection.updateOne({
       _id: new ObjectID(this.data._id)

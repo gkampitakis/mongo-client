@@ -1,5 +1,7 @@
 import { Db, ObjectId } from 'mongodb';
 
+//TODO: this will be deprecated and will break into utils and model functions
+
 type FieldType = 'string' | 'number' | 'object' | typeof ObjectId;
 
 interface SchemaModel {
@@ -22,14 +24,13 @@ export class Schema {
   //Paths validation
 
   /** @internal */
-  public validate(document: any) {
+  public isValid(document: any, ignoreRequired = false) {
     //TODO: this needs more testing
 
-    const schema = this._schema,
-      sanitizedDoc: any = {};
+    const schema = this._schema;
 
     for (const field in schema) {
-      if (schema[field].required) {
+      if (schema[field].required && !ignoreRequired) {
         if (!document[field] && !schema[field].default) throw new Error(`${field} field is required`);
 
         if (!document[field]) {
@@ -37,16 +38,32 @@ export class Schema {
         }
       }
 
+      if (document[field] &&
+        schema[field].type !== typeof document[field]
+      ) {
+        throw new Error(`[Default value] ${field} must be type of ${schema[field].type}`);
+      }
+    }
+  }
+
+  /** @internal */
+  public sanitizeData(document: any) {
+
+    const schema = this._schema,
+      sanitizedDoc: any = {};
+
+    for (const field in schema) {
+
       if (document[field]) {
-        if (schema[field].type !== typeof document[field]) {
-          throw new Error(`${field} must be type of ${schema[field].type}`);
-        }
 
         sanitizedDoc[field] = document[field];
+
       }
+
     }
 
     return sanitizedDoc;
+
   }
 
   /** @internal */
@@ -65,3 +82,8 @@ export class Schema {
     }
   }
 }
+
+/**
+ *  ------------ BACKLOG ------------
+ *  //TODO: empty object on schema throw error
+ */
