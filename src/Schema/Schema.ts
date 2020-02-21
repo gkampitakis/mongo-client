@@ -6,7 +6,7 @@ type FieldType = 'string' | 'number' | 'object' | typeof ObjectId;
 
 interface SchemaModel {
   [key: string]: {
-    type: FieldType | { type: FieldType; ref: Schema }[];
+    type: FieldType | { type: FieldType; ref: Schema }[]; //TODO: this will need further investigation
     required?: boolean;
     default?: any;
     unique?: boolean;
@@ -38,9 +38,7 @@ export class Schema {
         }
       }
 
-      if (document[field] &&
-        schema[field].type !== typeof document[field]
-      ) {
+      if (document[field] && schema[field].type !== typeof document[field]) {
         throw new Error(`[Default value] ${field} must be type of ${schema[field].type}`);
       }
     }
@@ -48,22 +46,16 @@ export class Schema {
 
   /** @internal */
   public sanitizeData(document: any) {
-
     const schema = this._schema,
       sanitizedDoc: any = {};
 
     for (const field in schema) {
-
       if (document[field]) {
-
         sanitizedDoc[field] = document[field];
-
       }
-
     }
 
     return sanitizedDoc;
-
   }
 
   /** @internal */

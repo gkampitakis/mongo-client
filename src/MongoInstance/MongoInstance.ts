@@ -1,7 +1,6 @@
 import { Logger } from '@gkampitakis/tslog';
 import { Schema } from '../Schema/Schema';
 import { Collection, Db } from 'mongodb';
-import { Document, _Document, stripObject } from '../Document/Document';
 
 export abstract class MongoInstance {
   private readonly _collectionName: string;
@@ -20,7 +19,6 @@ export abstract class MongoInstance {
   }
 
   protected get collection(): Collection {
-
     if (!MongoInstance.database) throw new Error('MongoDriver not correctly initialized');
 
     return MongoInstance.database.collection(this._collectionName);
@@ -29,11 +27,5 @@ export abstract class MongoInstance {
   /** @internal */
   static setDb(db: Db) {
     if (!MongoInstance.database) MongoInstance.database = db;
-  }
-
-  protected stripObject(document: _Document): Document {
-    //TODO: this might be redundant
-
-    return stripObject(document);
   }
 }

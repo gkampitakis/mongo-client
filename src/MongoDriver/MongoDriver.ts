@@ -2,21 +2,22 @@ import mongodb, { Db, MongoClient, MongoClientOptions } from 'mongodb';
 import { MongoInstance } from '../MongoInstance/MongoInstance';
 import { Logger } from '@gkampitakis/tslog';
 
-class MongoDriver {
+// eslint-disable-next-line @typescript-eslint/class-name-casing
+class _MongoDriver {
   private db: Db | undefined;
-  private static instance: MongoDriver;
+  private static instance: _MongoDriver;
   private logger: Logger;
 
   private constructor() {
     this.logger = new Logger('MongoDriver', true);
   }
 
-  public static getInstance(): MongoDriver {
-    if (!MongoDriver.instance) {
-      MongoDriver.instance = new MongoDriver();
+  public static getInstance(): _MongoDriver {
+    if (!_MongoDriver.instance) {
+      _MongoDriver.instance = new _MongoDriver();
     }
 
-    return MongoDriver.instance;
+    return _MongoDriver.instance;
   }
 
   public connect(uri: string, database: string, options?: MongoClientOptions) {
@@ -29,11 +30,6 @@ class MongoDriver {
       return;
     });
   }
-
-  //FIXME: jest tests
-  //FIXME: README
-  //FIXME: jenkins file
-  //TODO: populate ??
 }
 
-export const _MongoDriver = MongoDriver.getInstance();
+export const MongoDriver = _MongoDriver.getInstance();
