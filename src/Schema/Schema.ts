@@ -78,4 +78,5 @@ export class Schema {
 /**
  *  ------------ BACKLOG ------------
  *  //TODO: empty object on schema throw error
+ *  //TODO: tests here as well
  */

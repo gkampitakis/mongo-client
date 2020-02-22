@@ -5,6 +5,7 @@ import { Logger } from '@gkampitakis/tslog';
 // eslint-disable-next-line @typescript-eslint/class-name-casing
 class _MongoDriver {
   private db: Db | undefined;
+  private client: MongoClient | undefined;
   private static instance: _MongoDriver;
   private logger: Logger;
 
@@ -24,11 +25,18 @@ class _MongoDriver {
     return mongodb.connect(uri, options).then(async (client: MongoClient) => {
       this.logger.info(`Connected to ${database}`);
       this.db = client.db(database);
+      this.client = client;
 
       MongoInstance.setDb(this.db);
 
       return;
     });
+  }
+
+  public disconnect(): Promise<void> {
+
+    return (this.client as MongoClient).close();
+
   }
 }
 

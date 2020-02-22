@@ -3,3 +3,4 @@ lib
 .npmrc
 .node-dev.json
 .vscode
+coverage

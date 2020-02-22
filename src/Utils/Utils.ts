@@ -23,3 +23,6 @@ export function stripObject(document: Document): Document {
     collectionName: document.collectionName
   };
 }
+
+
+// Write tests for here as well
