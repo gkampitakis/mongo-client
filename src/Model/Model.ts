@@ -53,7 +53,7 @@ class InternalModel extends MongoInstance {
 
         const result = await this.collection.findOneAndUpdate({ _id }, { $set: validData }, options);
 
-        if (!result) return resolve(null);
+        if (!result.value) return resolve(null);
 
         const wrappedDoc = Document(this.collectionName, result.value, this.schema);
 
