@@ -33,10 +33,14 @@ class _MongoDriver {
     });
   }
 
+  public async dropCollection(collection: string): Promise<boolean> {
+    if (!this.db) throw Error('Connection not established');
+
+    return (this.db as Db).dropCollection(collection);
+  }
+
   public disconnect(): Promise<void> {
-
     return (this.client as MongoClient).close();
-
   }
 }
 

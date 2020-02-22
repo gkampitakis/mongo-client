@@ -24,5 +24,4 @@ export function stripObject(document: Document): Document {
   };
 }
 
-
 // Write tests for here as well

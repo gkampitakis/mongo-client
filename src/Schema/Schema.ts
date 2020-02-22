@@ -60,12 +60,12 @@ export class Schema {
 
   /** @internal */
   public async setupCollection(collectionName: string, db: Db) {
+    const collection = await db.createCollection(collectionName);
+
     const schema = this._schema;
 
     for (const field in schema) {
       if (schema[field].unique) {
-        const collection = await db.createCollection(collectionName);
-
         const index: any = {};
         index[field] = 1;
 

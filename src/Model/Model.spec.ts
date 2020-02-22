@@ -1,54 +1,92 @@
 import { Model } from './Model';
-import { Schema } from "../Schema/Schema";
+import { Schema } from '../Schema/Schema';
 import { MongoDriver } from '../MongoDriver/MongoDriver';
+import { MongoMemoryServer } from 'mongodb-memory-server';
+import { Db } from 'mongodb';
 
 jest.mock('../Document/Document');
+jest.mock('../Schema/Schema');
 
-describe('initial testing suite', () => {
+describe('Model', () => {
+  const { DocumentSpy } = jest.requireMock('../Document/Document'),
+    SchemaMock = jest.requireMock('../Schema/Schema').Schema;
 
-  const { DocumentSpy } = jest.requireMock('../Document/Document');
+  let mongod: MongoMemoryServer;
 
-  beforeAll(async (done) => {
+  beforeAll(async done => {
+    mongod = new MongoMemoryServer();
 
-    await MongoDriver.connect('mongodb://localhost:27017', 'mongoDriver', {
+    const mongoURI = await mongod.getUri(),
+      dbName = await mongod.getDbName();
+
+    await MongoDriver.connect(mongoURI, dbName, {
       useNewUrlParser: true,
       useUnifiedTopology: true
     });
 
     done();
-
   });
 
-  afterAll(async (done) => {
-
+  afterAll(async done => {
     await MongoDriver.disconnect();
+    await mongod.stop();
 
     done();
-
   });
 
-  afterEach(() => {
-
+  beforeEach(async () => {
     DocumentSpy.mockClear();
-
+    SchemaMock.SetupCollectionSpy.mockClear();
   });
 
-  it('expect', async () => {
+  describe('on model creation', () => {
+    it('should call the setup collection if it/s the 1st time', done => {
+      const schema = new Schema({});
 
-    const test = Model('test', new Schema({ username: { type: 'string' } }));
-    await test.instance({ username: 'George' });
+      Model('test', schema);
 
-    expect(DocumentSpy).toHaveBeenCalledTimes(1);
+      setTimeout(() => {
+        expect(SchemaMock.SetupCollectionSpy).toHaveBeenNthCalledWith(1, 'test', expect.any(Db));
+        done();
+      }, 1000);
+    });
 
+    it('should not call again the prepare collection for same collection', done => {
+      const schema = new Schema({});
+
+      Model('cache', schema);
+      Model('cache', schema);
+
+      setTimeout(() => {
+        expect(SchemaMock.SetupCollectionSpy).toHaveBeenCalledTimes(1);
+        done();
+      }, 1000);
+    });
   });
 
+  describe('Create a model instance', () => {
+    it('should call the document function', () => {
+      const schema = new Schema({}),
+        testModel = Model('test', schema),
+        data = { test: 'Data' },
+        document = testModel.instance(data);
+
+      expect(document.data).toEqual(data);
+      expect(DocumentSpy).toHaveBeenNthCalledWith(1, 'test', data, schema);
+    });
+  });
+
+  // it('expect', async () => {
+
+  //   const test = Model('test', new Schema({ username: { type: 'string' } }));
+  //   await test.instance({ username: 'George' });
+
+  //   expect(DocumentSpy).toHaveBeenCalledTimes(1);
+
+  // });
 });
 
 /**
- *
- * //TODO: 1st create mock up for schema
- *  > test the setup collection is called on start is called with arguments
- *  > and not called when the collection already exists
  *
  *  > findOne
  *  > if the doc doesn't exist we don't call the document
