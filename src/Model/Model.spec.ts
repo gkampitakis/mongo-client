@@ -1,17 +1,18 @@
 import { Model } from './Model';
 import { Schema } from '../Schema/Schema';
-import { MongoDriver } from '../MongoDriver/MongoDriver';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { Db } from 'mongodb';
+import mongodb, { Db } from 'mongodb';
 
 jest.mock('../Document/Document');
 jest.mock('../Schema/Schema');
 jest.mock('../Utils/Utils');
+jest.mock('../MongoInstance/MongoInstance');
 
 describe('Model', () => {
   const { DocumentSpy } = jest.requireMock('../Document/Document'),
     { ObjectIdSpy, IsEmptyObjectSpy } = jest.requireMock('../Utils/Utils'),
-    SchemaMock = jest.requireMock('../Schema/Schema').Schema;
+    SchemaMock = jest.requireMock('../Schema/Schema').Schema,
+    MongoInstanceMock = jest.requireMock('../MongoInstance/MongoInstance').MongoInstance;
 
   let mongod: MongoMemoryServer;
 
@@ -21,16 +22,13 @@ describe('Model', () => {
     const mongoURI = await mongod.getUri(),
       dbName = await mongod.getDbName();
 
-    await MongoDriver.connect(mongoURI, dbName, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
+    mongodb.connect(mongoURI).then((client: any) => {
+      MongoInstanceMock.database = client.db(dbName);
+      done();
     });
-
-    done();
   });
 
   afterAll(async done => {
-    await MongoDriver.disconnect();
     await mongod.stop();
 
     done();
@@ -41,6 +39,8 @@ describe('Model', () => {
     SchemaMock.SetupCollectionSpy.mockClear();
     SchemaMock.SanitizeDataSpy.mockClear();
     SchemaMock.IsValidSpy.mockClear();
+    MongoInstanceMock.GetCollectionSpy.mockClear();
+    MongoInstanceMock.GetCollectionNameSpy.mockClear();
     ObjectIdSpy.mockClear();
     IsEmptyObjectSpy.mockClear();
   });
@@ -93,6 +93,7 @@ describe('Model', () => {
         data: { _id: expect.any(String), ...data },
         collectionName: 'test1'
       });
+      expect(MongoInstanceMock.GetCollectionSpy).toHaveBeenCalledTimes(1);
       expect(DocumentSpy).toHaveBeenNthCalledWith(1, 'test1', data, schema);
     });
   });
@@ -107,6 +108,7 @@ describe('Model', () => {
       expect(SchemaMock.SanitizeDataSpy).toHaveBeenNthCalledWith(1, { test: 'test' });
       expect(IsEmptyObjectSpy).toHaveBeenNthCalledWith(1, { test: 'test' });
       expect(SchemaMock.IsValidSpy).toHaveBeenNthCalledWith(1, { test: 'test' }, true);
+      expect(MongoInstanceMock.GetCollectionSpy).toHaveBeenCalledTimes(1);
       expect(result).toBeNull();
     });
 
@@ -117,12 +119,16 @@ describe('Model', () => {
         updatedData = { test: 'test2' };
 
       let result: any = await testModel.create(data);
+
+      MongoInstanceMock.GetCollectionSpy.mockClear();
+
       result = await testModel.findByIdAndUpdate(result.data._id, updatedData);
 
       expect(result).toEqual({
         data: { _id: expect.any(String), ...data },
         collectionName: 'test2'
       });
+      expect(MongoInstanceMock.GetCollectionSpy).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -133,6 +139,7 @@ describe('Model', () => {
 
       await testModel.findById('5e4acf03d8e9435b2a2640ae');
 
+      expect(MongoInstanceMock.GetCollectionSpy).toHaveBeenCalledTimes(1);
       expect(ObjectIdSpy).toHaveBeenNthCalledWith(1, '5e4acf03d8e9435b2a2640ae');
     });
   });
@@ -145,6 +152,7 @@ describe('Model', () => {
       const result = await testModel.findOne({ name: 'name' });
 
       expect(result).toBeNull();
+      expect(MongoInstanceMock.GetCollectionSpy).toHaveBeenCalledTimes(1);
       expect(DocumentSpy).toHaveBeenCalledTimes(0);
     });
 
@@ -166,8 +174,3 @@ describe('Model', () => {
     });
   });
 });
-
-/**
- * //TODO: some how we must test the MongoInstance Abstract
- *
- */
