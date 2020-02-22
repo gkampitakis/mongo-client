@@ -5,11 +5,12 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "test": "rimraf dist coverage && npm run lint && jest",
+    "test": "npm run clean && npm run lint && jest",
     "dev": "ts-node-dev --respawn --transpileOnly ./dev.ts",
-    "build": "rimraf ./lib && tsc",
+    "build": "npm run clean && tsc",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "eslint src/**/*.ts",
+    "clean": "rimraf ./lib ./coverage",
     "prepublishOnly": "npm run format && npm run build"
   },
   "keywords": [

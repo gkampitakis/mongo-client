@@ -45,7 +45,7 @@ describe('Model', () => {
     IsEmptyObjectSpy.mockClear();
   });
 
-  describe('on model creation', () => {
+  describe('Constructor', () => {
     it('Should call the setup collection if it/s the 1st time', done => {
       const schema = new Schema({});
 
@@ -70,7 +70,7 @@ describe('Model', () => {
     });
   });
 
-  describe('Create a model instance', () => {
+  describe('Method instance', () => {
     it('Should call the document function', () => {
       const schema = new Schema({}),
         testModel = Model('test', schema),
@@ -82,7 +82,7 @@ describe('Model', () => {
     });
   });
 
-  describe('create Function', () => {
+  describe('Method create', () => {
     it('Should call the document function', async () => {
       const schema = new Schema({}),
         testModel = Model('test1', schema),
@@ -98,7 +98,7 @@ describe('Model', () => {
     });
   });
 
-  describe('findByIdAndUpdate Function', () => {
+  describe('Method findByIdAndUpdate', () => {
     it('Should return null if not found', async () => {
       const schema = new Schema({}),
         testModel = Model('test2', schema);
@@ -132,7 +132,7 @@ describe('Model', () => {
     });
   });
 
-  describe('Function findById ', () => {
+  describe('Method findById ', () => {
     it('Should call the objectId', async () => {
       const schema = new Schema({}),
         testModel = Model('test3', schema);
@@ -144,7 +144,7 @@ describe('Model', () => {
     });
   });
 
-  describe('Function findOne', () => {
+  describe('Method findOne', () => {
     it("Should return null if the doc doesn't exist and not proceed", async () => {
       const schema = new Schema({}),
         testModel = Model('test4', schema);
