@@ -118,8 +118,11 @@ describe('Schema', () => {
       schema.setupCollection('test', (dbMock as unknown) as Db);
 
       setTimeout(() => {
-        expect(createIndexSpy).toHaveBeenCalledTimes(2);
-        expect(createCollectionSpy).toHaveBeenCalledTimes(1);
+        expect(createIndexSpy.mock.calls).toEqual([
+          [{ username: 1 }, { unique: true }],
+          [{ email: 1 }, { unique: true }]
+        ]);
+        expect(createCollectionSpy).toHaveBeenNthCalledWith(1, 'test');
 
         done();
       }, 1000);
