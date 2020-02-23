@@ -54,5 +54,4 @@ export type Document<data = any> = {
  * //TODO: all supported functions
  * //TODO: schema validation wherever needed
  *
- *
  */

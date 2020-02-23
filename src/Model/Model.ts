@@ -130,9 +130,7 @@ export type Model = {
  *  ------------ BACKLOG ------------
  *
  *  Implement all functions used at personal projects
- *  Start writing the tests and then continue with everything else
- *
- *  Return Correct types
+ *  //TODO:Return Correct types
  *  //TODO: find the way that you write comments and they are shown above in the editor
  *  //TODO: benchmarks
  *  //TODO: schema validation wherever needed
@@ -140,7 +138,7 @@ export type Model = {
  *  //FIXME: README
  *  //FIXME: jenkins file
  *  //TODO: populate ??
- *
- * Jest tests
+ *  //TODO:write code and tests about what is returned for example on .deleteMany
+ *  //TODO: Coverage support
  *
  */

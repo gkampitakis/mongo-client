@@ -1,7 +1,7 @@
 import { Model } from './Model';
 import { Schema } from '../Schema/Schema';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import mongodb, { Db } from 'mongodb';
+import mongodb, { Db, ObjectID } from 'mongodb';
 
 jest.mock('../Document/Document');
 jest.mock('../Schema/Schema');
@@ -43,10 +43,15 @@ describe('Model', () => {
     MongoInstanceMock.GetCollectionNameSpy.mockClear();
     ObjectIdSpy.mockClear();
     IsEmptyObjectSpy.mockClear();
+
+    /**Mongo DB operations Spies */
+    MongoInstanceMock.InsertOneSpy.mockClear();
+    MongoInstanceMock.FindOneAndUpdateSpy.mockClear();
+    MongoInstanceMock.FindOneSpy.mockClear();
   });
 
   describe('Constructor', () => {
-    it('Should call the setup collection if it/s the 1st time', done => {
+    it('Should call the prepare collection if it/s the 1st time', done => {
       const schema = new Schema({});
 
       Model('test', schema);
@@ -95,6 +100,7 @@ describe('Model', () => {
       });
       expect(MongoInstanceMock.GetCollectionSpy).toHaveBeenCalledTimes(1);
       expect(DocumentSpy).toHaveBeenNthCalledWith(1, 'test1', data, schema);
+      expect(MongoInstanceMock.InsertOneSpy).toHaveBeenNthCalledWith(1, data);
     });
   });
 
@@ -110,6 +116,12 @@ describe('Model', () => {
       expect(SchemaMock.IsValidSpy).toHaveBeenNthCalledWith(1, { test: 'test' }, true);
       expect(MongoInstanceMock.GetCollectionSpy).toHaveBeenCalledTimes(1);
       expect(result).toBeNull();
+      expect(MongoInstanceMock.FindOneAndUpdateSpy).toHaveBeenNthCalledWith(
+        1,
+        { _id: new ObjectID('5e4acf03d8e9435b2a2640ae') },
+        { $set: { test: 'test' } },
+        { upsert: false }
+      );
     });
 
     it('Should return a wrapped object', async () => {
@@ -129,6 +141,12 @@ describe('Model', () => {
         collectionName: 'test2'
       });
       expect(MongoInstanceMock.GetCollectionSpy).toHaveBeenCalledTimes(1);
+      expect(MongoInstanceMock.FindOneAndUpdateSpy).toHaveBeenNthCalledWith(
+        1,
+        { _id: new ObjectID(result.data._id) },
+        { $set: { test: 'test2' } },
+        undefined
+      );
     });
   });
 
@@ -141,6 +159,9 @@ describe('Model', () => {
 
       expect(MongoInstanceMock.GetCollectionSpy).toHaveBeenCalledTimes(1);
       expect(ObjectIdSpy).toHaveBeenNthCalledWith(1, '5e4acf03d8e9435b2a2640ae');
+      expect(MongoInstanceMock.FindOneSpy).toHaveBeenNthCalledWith(1, {
+        _id: new ObjectID('5e4acf03d8e9435b2a2640ae')
+      });
     });
   });
 
@@ -154,6 +175,7 @@ describe('Model', () => {
       expect(result).toBeNull();
       expect(MongoInstanceMock.GetCollectionSpy).toHaveBeenCalledTimes(1);
       expect(DocumentSpy).toHaveBeenCalledTimes(0);
+      expect(MongoInstanceMock.FindOneSpy).toHaveBeenNthCalledWith(1, { name: 'name' });
     });
 
     it('Should return a wrapped document', async () => {
@@ -170,6 +192,10 @@ describe('Model', () => {
       expect(result).toEqual({
         data,
         collectionName: 'test5'
+      });
+      expect(MongoInstanceMock.InsertOneSpy).toHaveBeenNthCalledWith(1, {
+        _id: new ObjectID(result.data._id),
+        test: 'test'
       });
     });
   });
