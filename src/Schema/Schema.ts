@@ -1,12 +1,10 @@
 import { Db, ObjectId } from 'mongodb';
 
-//TODO: this will be deprecated and will break into utils and model functions
-
 type FieldType = 'string' | 'number' | 'object' | typeof ObjectId;
 
 interface SchemaModel {
   [key: string]: {
-    type: FieldType | { type: FieldType; ref: Schema }[]; //TODO: this will need further investigation
+    type: FieldType | { type: FieldType; ref: Schema }[]; //TODO: this will need further investigation //BUG: this should have a model reference
     required?: boolean;
     default?: any;
     unique?: boolean;
@@ -19,14 +17,9 @@ export class Schema {
   public constructor(schema: SchemaModel) {
     this._schema = schema;
   }
-  //TODO:
-  //HOOKS
-  //Paths validation
 
   /** @internal */
   public isValid(document: any, ignoreRequired = false) {
-    //TODO: this needs more testing
-
     const schema = this._schema;
 
     for (const field in schema) {
@@ -39,7 +32,7 @@ export class Schema {
       }
 
       if (document[field] && schema[field].type !== typeof document[field]) {
-        throw new Error(`[Default value] ${field} must be type of ${schema[field].type}`);
+        throw new Error(`${field} must be type of ${schema[field].type}`);
       }
     }
   }
@@ -77,6 +70,7 @@ export class Schema {
 
 /**
  *  ------------ BACKLOG ------------
- *  //TODO: empty object on schema throw error
- *  //TODO: tests here as well
+ *  //TODO: Paths
+ *  //TODO: Hooks
+ *  //Populate and schema reference to another Model
  */

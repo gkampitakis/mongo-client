@@ -22,7 +22,7 @@ describe('Model', () => {
     const mongoURI = await mongod.getUri(),
       dbName = await mongod.getDbName();
 
-    mongodb.connect(mongoURI).then((client: any) => {
+    mongodb.connect(mongoURI, { useUnifiedTopology: true }).then((client: any) => {
       MongoInstanceMock.database = client.db(dbName);
       done();
     });
