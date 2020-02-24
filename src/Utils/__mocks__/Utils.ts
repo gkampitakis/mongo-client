@@ -1,7 +1,8 @@
 import { ObjectID } from 'mongodb';
 
 const ObjectIdSpy = jest.fn(),
-  IsEmptyObjectSpy = jest.fn();
+  IsEmptyObjectSpy = jest.fn(),
+  StripObjectSpy = jest.fn();
 
 function objectID(id: string) {
   ObjectIdSpy(...arguments);
@@ -15,4 +16,9 @@ function isEmptyObject(data: any) {
   return false;
 }
 
-export { objectID, ObjectIdSpy, isEmptyObject, IsEmptyObjectSpy };
+function stripObject(data: any) {
+  StripObjectSpy(...arguments);
+  return data;
+}
+
+export { objectID, ObjectIdSpy, isEmptyObject, IsEmptyObjectSpy, stripObject, StripObjectSpy };
