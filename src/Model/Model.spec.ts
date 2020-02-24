@@ -1,7 +1,7 @@
 import { Model } from './Model';
 import { Schema } from '../Schema/Schema';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import mongodb, { Db, ObjectID } from 'mongodb';
+import mongodb, { Db, MongoClient, ObjectID } from 'mongodb';
 
 jest.mock('../Document/Document');
 jest.mock('../Schema/Schema');
@@ -22,7 +22,7 @@ describe('Model', () => {
     const mongoURI = await mongod.getUri(),
       dbName = await mongod.getDbName();
 
-    mongodb.connect(mongoURI, { useUnifiedTopology: true }).then((client: any) => {
+    mongodb.connect(mongoURI, { useUnifiedTopology: true }).then((client: MongoClient) => {
       MongoInstanceMock.database = client.db(dbName);
       done();
     });
@@ -43,6 +43,8 @@ describe('Model', () => {
     MongoInstanceMock.GetCollectionNameSpy.mockClear();
     ObjectIdSpy.mockClear();
     IsEmptyObjectSpy.mockClear();
+
+    MongoInstanceMock.throwError = false;
 
     /**Mongo DB operations Spies */
     MongoInstanceMock.InsertOneSpy.mockClear();
@@ -104,6 +106,17 @@ describe('Model', () => {
     });
   });
 
+  describe('Method deleteMany', () => {
+    it('should call the deleteMany mongo function', async () => {
+      const schema = new Schema({}),
+        testModel = Model('test1', schema);
+
+      await testModel.deleteMany({});
+
+      expect(MongoInstanceMock.DeleteManySpy).toHaveBeenNthCalledWith(1, {});
+    });
+  });
+
   describe('Method findByIdAndUpdate', () => {
     it('Should return null if not found', async () => {
       const schema = new Schema({}),
@@ -124,17 +137,30 @@ describe('Model', () => {
       );
     });
 
+    it('Should return null if empty object is provided', async () => {
+      const schema = new Schema({}),
+        testModel = Model('test2', schema);
+
+      const result = await testModel.findByIdAndUpdate('5e4acf03d8e9435b2a2640ae', {}, { upsert: false });
+      expect(SchemaMock.SanitizeDataSpy).toHaveBeenNthCalledWith(1, {});
+      expect(IsEmptyObjectSpy).toHaveBeenNthCalledWith(1, {});
+      expect(SchemaMock.IsValidSpy).toHaveBeenCalledTimes(0);
+      expect(MongoInstanceMock.GetCollectionSpy).toHaveBeenCalledTimes(0);
+      expect(result).toBeNull();
+      expect(MongoInstanceMock.FindOneAndUpdateSpy).toHaveBeenCalledTimes(0);
+    });
+
     it('Should return a wrapped object', async () => {
       const schema = new Schema({}),
         testModel = Model('test2', schema),
         data = { test: 'test' },
         updatedData = { test: 'test2' };
 
-      let result: any = await testModel.create(data);
+      const result = await testModel.create(data);
 
       MongoInstanceMock.GetCollectionSpy.mockClear();
 
-      result = await testModel.findByIdAndUpdate(result.data._id, updatedData);
+      await testModel.findByIdAndUpdate(result.data._id as string, updatedData);
 
       expect(result).toEqual({
         data: { _id: expect.any(String), ...data },
@@ -183,10 +209,10 @@ describe('Model', () => {
         testModel = Model('test5', schema),
         data = { test: 'test' };
 
-      let result: any = await testModel.create(data);
+      const result = await testModel.create(data);
       DocumentSpy.mockClear();
 
-      result = await testModel.findOne({ _id: result.data._id });
+      await testModel.findOne({ _id: result.data._id });
 
       expect(DocumentSpy).toHaveBeenCalledTimes(1);
       expect(result).toEqual({

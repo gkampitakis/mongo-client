@@ -23,13 +23,10 @@ export class Schema {
     const schema = this._schema;
 
     for (const field in schema) {
-      if (schema[field].required && !ignoreRequired) {
-        if (!document[field] && !schema[field].default) throw new Error(`${field} field is required`);
+      if (schema[field].required && !ignoreRequired && !document[field] && !schema[field].default)
+        throw new Error(`${field} field is required`);
 
-        if (!document[field]) {
-          document[field] = schema[field].default;
-        }
-      }
+      if (schema[field].default && !document[field]) document[field] = schema[field].default;
 
       if (document[field] && schema[field].type !== typeof document[field]) {
         throw new Error(`${field} must be type of ${schema[field].type}`);

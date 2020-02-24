@@ -13,7 +13,7 @@ function objectID(id: string) {
 function isEmptyObject(data: any) {
   IsEmptyObjectSpy(...arguments);
 
-  return false;
+  return Object.keys(data).length === 0;
 }
 
 function stripObject(data: any) {

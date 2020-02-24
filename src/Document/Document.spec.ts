@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Document } from './Document';
-import mongodb, { ObjectID } from 'mongodb';
+import mongodb, { MongoClient, ObjectID } from 'mongodb';
 import { Schema } from '../Schema/Schema';
 
 jest.mock('../Utils/Utils');
@@ -21,7 +21,7 @@ describe('Document', () => {
     const mongoURI = await mongod.getUri(),
       dbName = await mongod.getDbName();
 
-    mongodb.connect(mongoURI, { useUnifiedTopology: true }).then((client: any) => {
+    mongodb.connect(mongoURI, { useUnifiedTopology: true }).then((client: MongoClient) => {
       MongoInstanceMock.database = client.db(dbName);
       done();
     });
@@ -67,7 +67,6 @@ describe('Document', () => {
       await doc.remove();
 
       expect(MongoInstanceMock.DeleteOneSpy).toHaveBeenNthCalledWith(1, { _id: new ObjectID(doc.data._id) });
-
     });
   });
 
@@ -78,10 +77,12 @@ describe('Document', () => {
       await doc.save(); //BUG: the return value here
 
       expect(MongoInstanceMock.GetCollectionSpy).toBeCalledTimes(1);
-      expect(MongoInstanceMock.UpdateOneSpy).toHaveBeenNthCalledWith(1,
+      expect(MongoInstanceMock.UpdateOneSpy).toHaveBeenNthCalledWith(
+        1,
         { _id: doc.data._id },
-        { $set: { _id: doc.data._id, testField: { name: "test" } } },
-        { upsert: true });
+        { $set: { _id: doc.data._id, testField: { name: 'test' } } },
+        { upsert: true }
+      );
     });
   });
 

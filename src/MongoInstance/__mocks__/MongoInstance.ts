@@ -11,6 +11,7 @@ export abstract class MongoInstance {
   public static InsertOneSpy = jest.fn();
   public static FindOneSpy = jest.fn();
   public static DeleteOneSpy = jest.fn();
+  public static SetDbSpy = jest.fn();
 
   public static GetCollectionNameSpy = jest.fn();
   public static GetCollectionSpy = jest.fn();
@@ -23,6 +24,10 @@ export abstract class MongoInstance {
   get collectionName(): string {
     MongoInstance.GetCollectionNameSpy();
     return this._collectionName;
+  }
+
+  static setDb(db: any) {
+    MongoInstance.SetDbSpy(db);
   }
 
   get collection() {

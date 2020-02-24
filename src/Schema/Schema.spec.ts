@@ -16,6 +16,24 @@ describe('Schema', () => {
       expect(() => schema.isValid({})).toThrowError('username field is required');
     });
 
+    it("Should throw error if default value doesn't have the same type", () => {
+      schema = new Schema({
+        username: {
+          type: 'string',
+          default: []
+        },
+        test: {
+          type: 'string'
+        }
+      });
+
+      expect(() =>
+        schema.isValid({
+          test: 'test'
+        })
+      ).toThrowError('username must be type of string');
+    });
+
     it('Should throw error if data are different type of schema', () => {
       schema = new Schema({
         username: {
@@ -84,12 +102,12 @@ describe('Schema', () => {
       const createCollectionSpy = jest.fn(),
         createIndexSpy = jest.fn(),
         dbMock = {
-          createCollection: (collection: any) => {
+          createCollection: (collection: string) => {
             createCollectionSpy(collection);
 
             return new Promise(resolve => {
               resolve({
-                createIndex: (index: any, options: any) => {
+                createIndex: (index: object, options: object) => {
                   createIndexSpy(index, options);
                 }
               });

@@ -18,7 +18,7 @@ class InternalModel extends MongoInstance {
     this.prepareCollection(collectionName, schema);
   }
 
-  public findOne(query: any): Promise<Document | null> {
+  public findOne(query: object): Promise<Document | null> {
     return new Promise(async (resolve, reject) => {
       try {
         const result = await this.collection.findOne(query);
@@ -40,7 +40,7 @@ class InternalModel extends MongoInstance {
     return this.findOne({ _id });
   }
 
-  public findByIdAndUpdate(id: string, update: any, options?: FindOneAndUpdateOption) {
+  public findByIdAndUpdate(id: string, update: object, options?: FindOneAndUpdateOption) {
     const _id = objectID(id);
 
     return new Promise(async (resolve, reject) => {
@@ -64,7 +64,7 @@ class InternalModel extends MongoInstance {
     });
   }
 
-  public deleteMany(filter: FilterQuery<any>) {
+  public deleteMany(filter: FilterQuery<object>) {
     return this.collection.deleteMany(filter);
   }
 
@@ -81,14 +81,12 @@ class InternalModel extends MongoInstance {
 
         resolve(wrappedDoc);
       } catch (error) {
-        this.logger.error(error.message);
-
         reject(error);
       }
     });
   }
 
-  private async prepareCollection(collectionName: string, schema: Schema): Promise<any> {
+  private async prepareCollection(collectionName: string, schema: Schema) {
     const collectionExists = await this.collectionExists(collectionName);
 
     if (collectionExists) return;
@@ -116,14 +114,14 @@ export function Model(collectionName: string, schema: Schema): Model {
 export type Model = {
   instance<Generic>(data: Generic): Document<Generic>;
   create<Generic>(data: Generic): Promise<Document<Generic>>;
-  deleteMany(filter: FilterQuery<any>): Promise<DeleteWriteOpResultObject>;
+  deleteMany(filter: FilterQuery<object>): Promise<DeleteWriteOpResultObject>;
   findByIdAndUpdate(
     id: string,
-    update: any,
+    update: object,
     options?: FindOneAndUpdateOption
-  ): Promise<FindAndModifyWriteOpResultObject<any>>;
+  ): Promise<FindAndModifyWriteOpResultObject<object>>;
   findById(id: string): Promise<Document | null>;
-  findOne(query: any): Promise<Document | null>;
+  findOne(query: object): Promise<Document | null>;
 };
 
 /**
@@ -139,6 +137,4 @@ export type Model = {
  *  //FIXME: jenkins file
  *  //TODO: populate ??
  *  //TODO:write code and tests about what is returned for example on .deleteMany
- *  //TODO: Coverage support
- *
  */

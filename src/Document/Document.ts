@@ -44,7 +44,7 @@ export function Document<Generic>(collectionName: string, data: Generic, schema:
 export type Document<data = any> = {
   data: { _id?: string } & data;
   lean: () => { _id?: string } & data;
-  save: () => void;
+  save: () => void; //TODO:evaluate what this functions should return
   remove: () => Promise<any>;
   collectionName: string;
 };
