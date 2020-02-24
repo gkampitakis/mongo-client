@@ -1,15 +1,12 @@
-import { Logger } from '@gkampitakis/tslog';
 import { Schema } from '../Schema/Schema';
 import { Collection, Db } from 'mongodb';
 
 export abstract class MongoInstance {
   private readonly _collectionName: string;
-  protected readonly logger: Logger;
   protected readonly schema: Schema;
   protected static database: Db;
 
   public constructor(collectionName: string, schema: Schema) {
-    this.logger = new Logger('MongoDriver', true);
     this._collectionName = collectionName;
     this.schema = schema;
   }

@@ -20,7 +20,6 @@
   "author": "Georgios Kampitakis",
   "license": "ISC",
   "dependencies": {
-    "@gkampitakis/tslog": "^1.1.0",
     "mongodb": "^3.5.3",
     "typescript": "^3.7.5"
   },
@@ -47,7 +46,7 @@
   ],
   "jest": {
     "verbose": true,
-    "collectCoverage": false,
+    "collectCoverage": true,
     "moduleFileExtensions": [
       "ts",
       "js"
@@ -64,10 +63,10 @@
     ],
     "coverageThreshold": {
       "global": {
-        "branches": 95,
-        "functions": 95,
-        "lines": 95,
-        "statements": 95
+        "branches": 90,
+        "functions": 90,
+        "lines": 90,
+        "statements": 90
       }
     }
   },
