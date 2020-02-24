@@ -5,12 +5,13 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run clean && npm run lint && jest",
     "dev": "ts-node-dev --respawn --transpileOnly ./dev.ts",
-    "build": "rimraf ./lib && tsc",
+    "build": "npm run clean && tsc",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "eslint src/**/*.ts",
-    "prepare": "npm run build"
+    "clean": "rimraf ./lib ./coverage",
+    "prepublishOnly": "npm run format && npm run build"
   },
   "keywords": [
     "mongodb",
@@ -19,7 +20,6 @@
   "author": "Georgios Kampitakis",
   "license": "ISC",
   "dependencies": {
-    "@gkampitakis/tslog": "^1.1.0",
     "mongodb": "^3.5.3",
     "typescript": "^3.7.5"
   },
@@ -44,6 +44,37 @@
   "files": [
     "lib/**/*"
   ],
+  "jest": {
+    "verbose": true,
+    "collectCoverage": true,
+    "moduleFileExtensions": [
+      "ts",
+      "js"
+    ],
+    "transform": {
+      "\\.(ts|tsx)$": "ts-jest"
+    },
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "testResultsProcessor": "jest-sonar-reporter",
+    "collectCoverageFrom": [
+      "src/**/*.{ts,tsx}",
+      "!src/**/index.{ts,tsx}",
+      "!src/**/*.d.ts"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 90,
+        "functions": 90,
+        "lines": 90,
+        "statements": 90
+      }
+    }
+  },
+  "jestSonar": {
+    "reportPath": "coverage",
+    "reportFile": "test-report.xml",
+    "indent": 4
+  },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   }

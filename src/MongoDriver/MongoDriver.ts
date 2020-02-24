@@ -1,41 +1,30 @@
 import mongodb, { Db, MongoClient, MongoClientOptions } from 'mongodb';
-import { Model } from '../Model/Model';
-import { Document } from '../Document/Document';
-import { Logger } from '@gkampitakis/tslog';
+import { MongoInstance } from '../MongoInstance/MongoInstance';
 
-class MongoDriver {
+// eslint-disable-next-line @typescript-eslint/class-name-casing
+class _MongoDriver {
   private db: Db | undefined;
-  private static instance: MongoDriver;
-  private logger: Logger;
+  private client: MongoClient | undefined;
+  private static instance: _MongoDriver;
 
-  private constructor() {
-    this.logger = new Logger('MongoDriver', true);
-  }
-
-  public static getInstance(): MongoDriver {
-    if (!MongoDriver.instance) {
-      MongoDriver.instance = new MongoDriver();
+  public static getInstance(): _MongoDriver {
+    if (!_MongoDriver.instance) {
+      _MongoDriver.instance = new _MongoDriver();
     }
 
-    return MongoDriver.instance;
+    return _MongoDriver.instance;
   }
 
   public connect(uri: string, database: string, options?: MongoClientOptions) {
     return mongodb.connect(uri, options).then(async (client: MongoClient) => {
-      this.logger.info(`Connected to ${database}`);
       this.db = client.db(database);
+      this.client = client;
 
-      Model.setDb(this.db);
-      Document.setDb(this.db);
+      MongoInstance.setDb(this.db);
 
       return;
     });
   }
-
-  //FIXME: jest tests
-  //FIXME: README
-  //FIXME: jenkins file
-  //TODO: populate ??
 }
 
-export const _MongoDriver = MongoDriver.getInstance();
+export const MongoDriver = _MongoDriver.getInstance();

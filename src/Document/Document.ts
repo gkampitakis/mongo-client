@@ -1,50 +1,57 @@
-import { Db, ObjectID } from 'mongodb';
-import { Schema } from "../Schema/Schema";
+/* eslint-disable @typescript-eslint/class-name-casing */
+import { ObjectID } from 'mongodb';
+import { Schema } from '../Schema/Schema';
+import { MongoInstance } from '../MongoInstance/MongoInstance';
+import { stripObject } from '../Utils/Utils';
 
-export class Document {
+/** @internal */
+class _Document extends MongoInstance {
+  public data: any;
 
-  public document: any;
-  private _collectionName: string;
-  private schema: Schema;
-  private static database: Db;
+  public constructor(collectionName: string, data: any, schema: Schema) {
+    super(collectionName, schema);
 
-  public constructor(collection: string, doc: any, schema: Schema) {
-    this._collectionName = collection;
-    this.document = doc;
-    this.schema = schema;
-
-    this.schema.validate(doc);
+    this.data = this.schema.sanitizeData(data);
+    this.schema.isValid(data);
   }
 
-  get collectionName(): string {
+  public remove = (): Promise<{}> => {
+    return this.collection.deleteOne({ _id: new ObjectID(this.data._id) });
+  };
 
-    return this._collectionName;
+  public save = async (): Promise<{}> => {
+    this.data._id = this.data._id || new ObjectID();
 
-  }
+    return await this.collection.updateOne(
+      {
+        _id: new ObjectID(this.data._id)
+      },
+      { $set: this.data },
+      { upsert: true }
+    );
+  };
 
-  /** @internal */
-  static setDb(db: Db) {
-    if (!Document.database) Document.database = db;
-  }
-
-  public remove(): Promise<any> {
-
-    const collection = Document.database.collection(this.collectionName);
-
-    return collection.deleteOne({ _id: new ObjectID(this.document._id) });
-
-  }
-
-  public save() {
-
-    console.log('saving doc');
-
-
-  }
-
-  public lean() {
-    console.log('leaning doc');
-
-  }
-
+  public lean = () => {
+    return this.data;
+  };
 }
+
+/** @internal */
+export function Document<Generic>(collectionName: string, data: Generic, schema: Schema): Document<Generic> {
+  return stripObject(new _Document(collectionName, data, schema));
+}
+
+export type Document<data = any> = {
+  data: { _id?: string } & data;
+  lean: () => { _id?: string } & data;
+  save: () => void; //TODO:evaluate what this functions should return
+  remove: () => Promise<any>;
+  collectionName: string;
+};
+/**
+ *
+ * ------------ BACKLOG ------------
+ * //TODO: all supported functions
+ * //TODO: schema validation wherever needed
+ *
+ */

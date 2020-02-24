@@ -1,102 +1,140 @@
+import { isEmptyObject, objectID } from '../Utils/Utils';
+import {
+  DeleteWriteOpResultObject,
+  FilterQuery,
+  FindAndModifyWriteOpResultObject,
+  FindOneAndUpdateOption
+} from 'mongodb';
 import { Schema } from '../Schema/Schema';
-import { Collection, Db, FilterQuery, FindOneAndUpdateOption, ObjectID, ObjectId } from 'mongodb';
-import { Logger } from "@gkampitakis/tslog";
+import { MongoInstance } from '../MongoInstance/MongoInstance';
 import { Document } from '../Document/Document';
 
-export class Model {
-  private collection: Collection;
-  private collectionName: string;
-  private schema: Schema;
-  private static database: Db;
-  private logger: Logger;
+/** @internal */
+class InternalModel extends MongoInstance {
+  public static cache: Map<string, InternalModel> = new Map();
 
   public constructor(collectionName: string, schema: Schema) {
-    this.logger = new Logger('MongoDriver', true);
-
-    this.collection = Model.database.collection(collectionName);
-    this.collectionName = collectionName;
-    this.schema = schema;
-
+    super(collectionName, schema);
     this.prepareCollection(collectionName, schema);
-
   }
 
-  /** @internal */
-  static setDb(db: Db) {
-    if (!Model.database) Model.database = db;
+  public findOne(query: object): Promise<Document | null> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const result = await this.collection.findOne(query);
+
+        if (!result) return resolve(null);
+
+        const wrappedDoc = Document(this.collectionName, result, this.schema);
+
+        resolve(wrappedDoc);
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
 
-  public findOne(query: any): Promise<any> {
-    //TODO: return document wrapped object
-    //Shcema wrap document internal method
-    return this.collection.findOne(query);
+  public findById(id: string): Promise<Document | null> {
+    const _id = objectID(id);
+
+    return this.findOne({ _id });
   }
 
-  public findById(id: string) {
-    //TODO: return document wrapped object
+  public findByIdAndUpdate(id: string, update: object, options?: FindOneAndUpdateOption) {
+    const _id = objectID(id);
 
-    if (!ObjectID.isValid(id)) throw new Error('Invalid id provided');
+    return new Promise(async (resolve, reject) => {
+      try {
+        const validData = this.schema.sanitizeData(update);
 
-    return this.collection.findOne({ _id: new ObjectId(id) });
+        if (isEmptyObject(validData)) return resolve(null);
+
+        this.schema.isValid(update, true);
+
+        const result = await this.collection.findOneAndUpdate({ _id }, { $set: validData }, options);
+
+        if (!result.value) return resolve(null);
+
+        const wrappedDoc = Document(this.collectionName, result.value, this.schema);
+
+        resolve(wrappedDoc);
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
 
-  public findByIdAndUpdate(id: string, update: any, options?: FindOneAndUpdateOption) {
-    //TODO: return document wrapped object
-
-    if (!ObjectID.isValid(id)) throw new Error('Invalid id provided');
-
-    return this.collection.findOneAndUpdate({ _id: new ObjectId(id) }, { $set: update }, options);
-  }
-
-  public deleteMany(filter: FilterQuery<any>) {
+  public deleteMany(filter: FilterQuery<object>) {
     return this.collection.deleteMany(filter);
   }
 
-  public instance() {
-    //Returns a document
-    //Wrap document with no data
+  public instance<Generic>(data: Generic): Document<Generic> {
+    return Document<Generic>(this.collectionName, data, this.schema);
   }
 
-  public create(document: any): Promise<Document> {
-
+  public create<Generic>(data: Generic): Promise<Document<Generic>> {
     return new Promise(async (resolve, reject) => {
-
       try {
+        const wrappedDoc = Document(this.collectionName, data, this.schema);
 
-        const wrappedDoc = new Document(this.collectionName, document, this.schema);
-
-        await this.collection.insertOne(wrappedDoc.document);
+        await this.collection.insertOne(wrappedDoc.data);
 
         resolve(wrappedDoc);
-
       } catch (error) {
-
-        this.logger.error(error.message);
-
         reject(error);
-
       }
-
     });
-
   }
 
-  private async prepareCollection(collectionName: string, schema: Schema): Promise<any> {
-
+  private async prepareCollection(collectionName: string, schema: Schema) {
     const collectionExists = await this.collectionExists(collectionName);
 
     if (collectionExists) return;
 
-    schema.setupCollection(collectionName, Model.database);
-
+    schema.setupCollection(collectionName, InternalModel.database);
   }
 
   private async collectionExists(collectionName: string) {
-
-    return await Model.database.listCollections({ name: collectionName }).hasNext();
-
+    return await InternalModel.database.listCollections({ name: collectionName }).hasNext();
   }
-
 }
 
-//TODO: one general mongoinstance with share things inside
+export function Model(collectionName: string, schema: Schema): Model {
+  if (InternalModel.cache.has(collectionName)) {
+    return InternalModel.cache.get(collectionName) as Model;
+  }
+
+  const newModel = new InternalModel(collectionName, schema);
+
+  InternalModel.cache.set(collectionName, newModel);
+
+  return newModel as Model;
+}
+
+export type Model = {
+  instance<Generic>(data: Generic): Document<Generic>;
+  create<Generic>(data: Generic): Promise<Document<Generic>>;
+  deleteMany(filter: FilterQuery<object>): Promise<DeleteWriteOpResultObject>;
+  findByIdAndUpdate(
+    id: string,
+    update: object,
+    options?: FindOneAndUpdateOption
+  ): Promise<FindAndModifyWriteOpResultObject<object>>;
+  findById(id: string): Promise<Document | null>;
+  findOne(query: object): Promise<Document | null>;
+};
+
+/**
+ *  ------------ BACKLOG ------------
+ *
+ *  Implement all functions used at personal projects
+ *  //TODO:Return Correct types
+ *  //TODO: find the way that you write comments and they are shown above in the editor
+ *  //TODO: benchmarks
+ *  //TODO: schema validation wherever needed
+ *  //TODO: add support for ignoring schema validation and make sure when this happens it is actually with less boiler plate code
+ *  //FIXME: README
+ *  //FIXME: jenkins file
+ *  //TODO: populate ??
+ *  //TODO:write code and tests about what is returned for example on .deleteMany
+ */
