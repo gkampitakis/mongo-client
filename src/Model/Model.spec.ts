@@ -111,9 +111,11 @@ describe('Model', () => {
       const schema = new Schema({}),
         testModel = Model('test1', schema);
 
-      await testModel.deleteMany({});
+      const res = await testModel.deleteMany({});
 
       expect(MongoInstanceMock.DeleteManySpy).toHaveBeenNthCalledWith(1, {});
+      expect(res).toBeUndefined;
+      
     });
   });
 

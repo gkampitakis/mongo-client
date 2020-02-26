@@ -3,6 +3,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Document } from './Document';
 import mongodb, { MongoClient, ObjectID } from 'mongodb';
 import { Schema } from '../Schema/Schema';
+import 'jest-extended';
 
 jest.mock('../Utils/Utils');
 jest.mock('../MongoInstance/MongoInstance');
@@ -59,14 +60,16 @@ describe('Document', () => {
   });
 
   describe('Method remove', () => {
-    it('placeholder', async () => {
+    it('Should call delete operation', async () => {
       const doc = Document('document_test', {}, new Schema({}));
 
       await doc.save();
 
-      await doc.remove();
+      const result = await doc.remove();
 
       expect(MongoInstanceMock.DeleteOneSpy).toHaveBeenNthCalledWith(1, { _id: new ObjectID(doc.data._id) });
+      expect(result).toEqual(doc);
+      
     });
   });
 
@@ -74,7 +77,7 @@ describe('Document', () => {
     it('Should call the get collection and save', async () => {
       const doc = Document('document_test', { testField: { name: 'test' } }, new Schema({}));
 
-      await doc.save(); //BUG: the return value here
+      const result = await doc.save();
 
       expect(MongoInstanceMock.GetCollectionSpy).toBeCalledTimes(1);
       expect(MongoInstanceMock.UpdateOneSpy).toHaveBeenNthCalledWith(
@@ -83,6 +86,7 @@ describe('Document', () => {
         { $set: { _id: doc.data._id, testField: { name: 'test' } } },
         { upsert: true }
       );
+      expect(result).toEqual(doc);
     });
   });
 

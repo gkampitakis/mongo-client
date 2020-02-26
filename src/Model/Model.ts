@@ -65,7 +65,18 @@ class InternalModel extends MongoInstance {
   }
 
   public deleteMany(filter: FilterQuery<object>) {
-    return this.collection.deleteMany(filter);
+
+    return new Promise(async (resolve, reject) => {
+
+      try {
+        await this.collection.deleteMany(filter);
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+
+    });
+
   }
 
   public instance<Generic>(data: Generic): Document<Generic> {
@@ -128,7 +139,6 @@ export type Model = {
  *  ------------ BACKLOG ------------
  *
  *  Implement all functions used at personal projects
- *  //TODO:Return Correct types
  *  //TODO: find the way that you write comments and they are shown above in the editor
  *  //TODO: benchmarks
  *  //TODO: schema validation wherever needed
@@ -136,5 +146,4 @@ export type Model = {
  *  //FIXME: README
  *  //FIXME: jenkins file
  *  //TODO: populate ??
- *  //TODO:write code and tests about what is returned for example on .deleteMany
  */

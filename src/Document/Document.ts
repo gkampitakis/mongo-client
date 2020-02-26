@@ -16,19 +16,50 @@ class _Document extends MongoInstance {
   }
 
   public remove = (): Promise<{}> => {
-    return this.collection.deleteOne({ _id: new ObjectID(this.data._id) });
+
+    return new Promise(async (resolve, reject) => {
+
+      try {
+
+        await this.collection.deleteOne({ _id: new ObjectID(this.data._id) });
+
+        resolve(stripObject(this));
+
+      } catch (error) {
+
+        reject(error);
+
+      }
+
+    });
+
   };
 
   public save = async (): Promise<{}> => {
     this.data._id = this.data._id || new ObjectID();
 
-    return await this.collection.updateOne(
-      {
-        _id: new ObjectID(this.data._id)
-      },
-      { $set: this.data },
-      { upsert: true }
-    );
+    return new Promise(async (resolve, reject) => {
+
+      try {
+        await this.collection.updateOne(
+          {
+            _id: new ObjectID(this.data._id)
+          },
+          { $set: this.data },
+          { upsert: true }
+        );
+
+        resolve(stripObject(this));
+
+      } catch (error) {
+
+        reject(error);
+
+      }
+
+    });
+
+
   };
 
   public lean = () => {
@@ -44,14 +75,14 @@ export function Document<Generic>(collectionName: string, data: Generic, schema:
 export type Document<data = any> = {
   data: { _id?: string } & data;
   lean: () => { _id?: string } & data;
-  save: () => void; //TODO:evaluate what this functions should return
+  save: () => void;
   remove: () => Promise<any>;
   collectionName: string;
 };
 /**
  *
  * ------------ BACKLOG ------------
- * //TODO: all supported functions
  * //TODO: schema validation wherever needed
+
  *
  */

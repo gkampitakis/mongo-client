@@ -59,7 +59,7 @@ MongoDriver.connect('mongodb://localhost:27017', 'mongoDriver', {
 
       // const test = userModel.instance({ username: 'test' });
       // console.log(test);
-      // console.log(await test.save());//BUG: this should return just a boolean value or something else
+      // console.log(await test.save());
 
 
       // console.log(test.data._id);
@@ -85,6 +85,11 @@ MongoDriver.connect('mongodb://localhost:27017', 'mongoDriver', {
       await test.save();
       console.log(test.data._id);
 
+      const res = await userModel.deleteMany({});
+
+      console.log(res);
+      
+
 
     } catch (error) {
 
@@ -98,21 +103,3 @@ MongoDriver.connect('mongodb://localhost:27017', 'mongoDriver', {
     console.log(err);
 
   });
-
-interface Test {
-  test: string;
-}
-
-
-/**
- *    ------------ BACKLOG ------------
- *
- * .save() //BUG: the returning value is off the place needs change check what it should return
- * Example
- * const test = userModel.instance({ username: 'test' });
- * console.log(test);
- * console.log(await test.save());
- * console.log(test.data._id);
- *
- *
- */
