@@ -13,9 +13,9 @@ import { Document } from '../Document/Document';
 class InternalModel extends MongoInstance {
   public static cache: Map<string, InternalModel> = new Map();
 
-  public constructor(collectionName: string, schema: Schema) {
+  public constructor(collectionName: string, schema?: Schema) {
     super(collectionName, schema);
-    this.prepareCollection(collectionName, schema);
+    if (schema) this.prepareCollection(collectionName, schema);
   }
 
   public findOne(query: object): Promise<Document | null> {
@@ -45,11 +45,11 @@ class InternalModel extends MongoInstance {
 
     return new Promise(async (resolve, reject) => {
       try {
-        const validData = this.schema.sanitizeData(update);
+        const validData = this.schema?.sanitizeData(update) || update;
 
         if (isEmptyObject(validData)) return resolve(null);
 
-        this.schema.isValid(update, true);
+        this.schema?.isValid(update, true);
 
         const result = await this.collection.findOneAndUpdate({ _id }, { $set: validData }, options);
 
@@ -79,8 +79,8 @@ class InternalModel extends MongoInstance {
 
   }
 
-  public instance<Generic>(data: Generic): Document<Generic> {
-    return Document<Generic>(this.collectionName, data, this.schema);
+  public instance<Generic extends ExtendableObject>(data: Generic): Document<Generic & ExtendableObject> {
+    return Document<Generic & ExtendableObject>(this.collectionName, data, this.schema);
   }
 
   public create<Generic>(data: Generic): Promise<Document<Generic>> {
@@ -110,7 +110,7 @@ class InternalModel extends MongoInstance {
   }
 }
 
-export function Model(collectionName: string, schema: Schema): Model {
+export function Model(collectionName: string, schema?: Schema): Model {
   if (InternalModel.cache.has(collectionName)) {
     return InternalModel.cache.get(collectionName) as Model;
   }
@@ -123,8 +123,8 @@ export function Model(collectionName: string, schema: Schema): Model {
 }
 
 export type Model = {
-  instance<Generic>(data: Generic): Document<Generic>;
-  create<Generic>(data: Generic): Promise<Document<Generic>>;
+  instance<Generic extends ExtendableObject>(data: Generic & ExtendableObject): Document<Generic & ExtendableObject>;
+  create<Generic extends ExtendableObject>(data: Generic & ExtendableObject): Promise<Document<Generic & ExtendableObject>>;
   deleteMany(filter: FilterQuery<object>): Promise<DeleteWriteOpResultObject>;
   findByIdAndUpdate(
     id: string,
@@ -135,6 +135,11 @@ export type Model = {
   findOne(query: object): Promise<Document | null>;
 };
 
+interface ExtendableObject {
+  [key: string]: any;
+};
+
+
 /**
  *  ------------ BACKLOG ------------
  *
@@ -142,8 +147,6 @@ export type Model = {
  *  //TODO: find the way that you write comments and they are shown above in the editor
  *  //TODO: benchmarks
  *  //TODO: schema validation wherever needed
- *  //TODO: add support for ignoring schema validation and make sure when this happens it is actually with less boiler plate code
- *  //FIXME: README
  *  //FIXME: jenkins file
  *  //TODO: populate ??
  */

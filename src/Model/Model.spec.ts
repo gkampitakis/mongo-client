@@ -75,6 +75,17 @@ describe('Model', () => {
         done();
       }, 1000);
     });
+
+    it('Should not call the prepare collection if no schema is given', (done) => {
+
+      Model('noSchema');
+
+      setTimeout(() => {
+        expect(SchemaMock.SetupCollectionSpy).toHaveBeenCalledTimes(0);
+        done();
+      }, 1000);
+
+    });
   });
 
   describe('Method instance', () => {
@@ -115,7 +126,7 @@ describe('Model', () => {
 
       expect(MongoInstanceMock.DeleteManySpy).toHaveBeenNthCalledWith(1, {});
       expect(res).toBeUndefined;
-      
+
     });
   });
 
@@ -175,6 +186,27 @@ describe('Model', () => {
         { $set: { test: 'test2' } },
         undefined
       );
+    });
+
+    it('Should not call the sanitizeData/isValid and just pass raw data if no schema', async () => {
+
+      const testModel = Model('NoSchema'),
+        data = { test: 'test' },
+        updatedData = { test: { test: 'test' } };
+
+      const result = await testModel.create(data);
+      await testModel.findByIdAndUpdate(result.data._id as string, updatedData);
+
+      expect(SchemaMock.IsValidSpy).toHaveBeenCalledTimes(0);
+      expect(SchemaMock.SanitizeDataSpy).toHaveBeenCalledTimes(0);
+      expect(IsEmptyObjectSpy).toHaveBeenNthCalledWith(1, updatedData);
+      expect(MongoInstanceMock.FindOneAndUpdateSpy).toHaveBeenNthCalledWith(
+        1,
+        { _id: new ObjectID(result.data._id) },
+        { $set: { test: { test: 'test' } } },
+        undefined
+      );
+
     });
   });
 

@@ -45,6 +45,8 @@ export class Schema {
       }
     }
 
+    if (document._id) sanitizedDoc._id = document._id;
+
     return sanitizedDoc;
   }
 

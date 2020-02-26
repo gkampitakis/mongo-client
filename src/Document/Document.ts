@@ -8,11 +8,12 @@ import { stripObject } from '../Utils/Utils';
 class _Document extends MongoInstance {
   public data: any;
 
-  public constructor(collectionName: string, data: any, schema: Schema) {
+  public constructor(collectionName: string, data: any, schema?: Schema) {
     super(collectionName, schema);
 
-    this.data = this.schema.sanitizeData(data);
-    this.schema.isValid(data);
+    this.data = data;
+
+    if (schema) this.beforeStep(data);
   }
 
   public remove = (): Promise<{}> => {
@@ -41,9 +42,12 @@ class _Document extends MongoInstance {
     return new Promise(async (resolve, reject) => {
 
       try {
+
+        if (this.schema) this.beforeStep(this.data);
+
         await this.collection.updateOne(
           {
-            _id: new ObjectID(this.data._id)
+            _id: this.data._id
           },
           { $set: this.data },
           { upsert: true }
@@ -65,10 +69,16 @@ class _Document extends MongoInstance {
   public lean = () => {
     return this.data;
   };
+
+  private beforeStep(data: any) {
+    this.data = this.schema!.sanitizeData(data);
+    this.schema!.isValid(data);
+  }
+
 }
 
 /** @internal */
-export function Document<Generic>(collectionName: string, data: Generic, schema: Schema): Document<Generic> {
+export function Document<Generic>(collectionName: string, data: Generic, schema?: Schema): Document<Generic> {
   return stripObject(new _Document(collectionName, data, schema));
 }
 
@@ -79,10 +89,3 @@ export type Document<data = any> = {
   remove: () => Promise<any>;
   collectionName: string;
 };
-/**
- *
- * ------------ BACKLOG ------------
- * //TODO: schema validation wherever needed
-
- *
- */

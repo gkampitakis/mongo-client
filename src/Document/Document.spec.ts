@@ -57,6 +57,16 @@ describe('Document', () => {
       expect(SchemaMock.SanitizeDataSpy).toHaveBeenNthCalledWith(1, {});
       expect(StripObjectSpy).toHaveBeenCalledTimes(1);
     });
+
+    it('Should not call the is valid/sanitize data if schema is not provided', () => {
+
+      Document('document_test', {});
+
+      expect(SchemaMock.IsValidSpy).not.toHaveBeenCalled();
+      expect(SchemaMock.SanitizeDataSpy).not.toHaveBeenCalled();
+      expect(StripObjectSpy).toHaveBeenCalledTimes(1);
+
+    });
   });
 
   describe('Method remove', () => {
@@ -69,17 +79,22 @@ describe('Document', () => {
 
       expect(MongoInstanceMock.DeleteOneSpy).toHaveBeenNthCalledWith(1, { _id: new ObjectID(doc.data._id) });
       expect(result).toEqual(doc);
-      
+
     });
   });
 
   describe('Method save', () => {
-    it('Should call the get collection and save', async () => {
-      const doc = Document('document_test', { testField: { name: 'test' } }, new Schema({}));
+    it('Should call the get collection/save/isValid/sanitizeData', async () => {
+      const data = {
+        testField: { name: 'test' }
+      },
+        doc = Document('document_test', data, new Schema({}));
 
       const result = await doc.save();
 
       expect(MongoInstanceMock.GetCollectionSpy).toBeCalledTimes(1);
+      expect(SchemaMock.IsValidSpy).toHaveBeenNthCalledWith(1, data);
+      expect(SchemaMock.SanitizeDataSpy).toHaveBeenNthCalledWith(1, data);
       expect(MongoInstanceMock.UpdateOneSpy).toHaveBeenNthCalledWith(
         1,
         { _id: doc.data._id },
@@ -87,6 +102,28 @@ describe('Document', () => {
         { upsert: true }
       );
       expect(result).toEqual(doc);
+    });
+
+    it('Should not call the isValid/sanitizeData if not schema provided', async () => {
+
+      const data = {
+        testField: { name: 'test' }
+      },
+        doc = Document('document_test', data);
+
+      const result = await doc.save();
+
+      expect(MongoInstanceMock.GetCollectionSpy).toBeCalledTimes(1);
+      expect(SchemaMock.IsValidSpy).not.toHaveBeenCalled();
+      expect(SchemaMock.SanitizeDataSpy).not.toHaveBeenCalled();
+      expect(MongoInstanceMock.UpdateOneSpy).toHaveBeenNthCalledWith(
+        1,
+        { _id: doc.data._id },
+        { $set: { _id: doc.data._id, testField: { name: 'test' } } },
+        { upsert: true }
+      );
+      expect(result).toEqual(doc);
+
     });
   });
 
