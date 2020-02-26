@@ -17,32 +17,22 @@ class _Document extends MongoInstance {
   }
 
   public remove = (): Promise<{}> => {
-
     return new Promise(async (resolve, reject) => {
-
       try {
-
         await this.collection.deleteOne({ _id: new ObjectID(this.data._id) });
 
         resolve(stripObject(this));
-
       } catch (error) {
-
         reject(error);
-
       }
-
     });
-
   };
 
   public save = async (): Promise<{}> => {
     this.data._id = this.data._id || new ObjectID();
 
     return new Promise(async (resolve, reject) => {
-
       try {
-
         if (this.schema) this.beforeStep(this.data);
 
         await this.collection.updateOne(
@@ -54,16 +44,10 @@ class _Document extends MongoInstance {
         );
 
         resolve(stripObject(this));
-
       } catch (error) {
-
         reject(error);
-
       }
-
     });
-
-
   };
 
   public lean = () => {
@@ -74,7 +58,6 @@ class _Document extends MongoInstance {
     this.data = this.schema!.sanitizeData(data);
     this.schema!.isValid(data);
   }
-
 }
 
 /** @internal */

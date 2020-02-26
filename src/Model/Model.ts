@@ -65,18 +65,14 @@ class InternalModel extends MongoInstance {
   }
 
   public deleteMany(filter: FilterQuery<object>) {
-
     return new Promise(async (resolve, reject) => {
-
       try {
         await this.collection.deleteMany(filter);
         resolve();
       } catch (error) {
         reject(error);
       }
-
     });
-
   }
 
   public instance<Generic extends ExtendableObject>(data: Generic): Document<Generic & ExtendableObject> {
@@ -124,7 +120,9 @@ export function Model(collectionName: string, schema?: Schema): Model {
 
 export type Model = {
   instance<Generic extends ExtendableObject>(data: Generic & ExtendableObject): Document<Generic & ExtendableObject>;
-  create<Generic extends ExtendableObject>(data: Generic & ExtendableObject): Promise<Document<Generic & ExtendableObject>>;
+  create<Generic extends ExtendableObject>(
+    data: Generic & ExtendableObject
+  ): Promise<Document<Generic & ExtendableObject>>;
   deleteMany(filter: FilterQuery<object>): Promise<DeleteWriteOpResultObject>;
   findByIdAndUpdate(
     id: string,
@@ -137,8 +135,7 @@ export type Model = {
 
 interface ExtendableObject {
   [key: string]: any;
-};
-
+}
 
 /**
  *  ------------ BACKLOG ------------

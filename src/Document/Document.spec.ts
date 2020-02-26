@@ -3,7 +3,6 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Document } from './Document';
 import mongodb, { MongoClient, ObjectID } from 'mongodb';
 import { Schema } from '../Schema/Schema';
-import 'jest-extended';
 
 jest.mock('../Utils/Utils');
 jest.mock('../MongoInstance/MongoInstance');
@@ -59,13 +58,11 @@ describe('Document', () => {
     });
 
     it('Should not call the is valid/sanitize data if schema is not provided', () => {
-
       Document('document_test', {});
 
       expect(SchemaMock.IsValidSpy).not.toHaveBeenCalled();
       expect(SchemaMock.SanitizeDataSpy).not.toHaveBeenCalled();
       expect(StripObjectSpy).toHaveBeenCalledTimes(1);
-
     });
   });
 
@@ -79,15 +76,14 @@ describe('Document', () => {
 
       expect(MongoInstanceMock.DeleteOneSpy).toHaveBeenNthCalledWith(1, { _id: new ObjectID(doc.data._id) });
       expect(result).toEqual(doc);
-
     });
   });
 
   describe('Method save', () => {
     it('Should call the get collection/save/isValid/sanitizeData', async () => {
       const data = {
-        testField: { name: 'test' }
-      },
+          testField: { name: 'test' }
+        },
         doc = Document('document_test', data, new Schema({}));
 
       const result = await doc.save();
@@ -105,10 +101,9 @@ describe('Document', () => {
     });
 
     it('Should not call the isValid/sanitizeData if not schema provided', async () => {
-
       const data = {
-        testField: { name: 'test' }
-      },
+          testField: { name: 'test' }
+        },
         doc = Document('document_test', data);
 
       const result = await doc.save();
@@ -123,7 +118,6 @@ describe('Document', () => {
         { upsert: true }
       );
       expect(result).toEqual(doc);
-
     });
   });
 
