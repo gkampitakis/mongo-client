@@ -20,6 +20,7 @@
   "author": "Georgios Kampitakis",
   "license": "ISC",
   "dependencies": {
+    "kareem": "^2.3.1",
     "mongodb": "^3.5.4",
     "typescript": "^3.8.2"
   },

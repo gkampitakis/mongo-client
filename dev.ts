@@ -48,10 +48,11 @@ MongoDriver.connect('mongodb://localhost:27017', 'mongoDriver', {
 
     try {
 
-      const userModel = Model('User', userSchema);
-      const userModel1 = Model('User', userSchema);
-      const userModel2 = Model('User', userSchema);
-      const userModel3 = Model('User', userSchema);
+      // const userModel = Model('User', userSchema);
+      // userSchema.test();
+      // const userModel1 = Model('User', userSchema);
+      // const userModel2 = Model('User', userSchema);
+      // const userModel3 = Model('User', userSchema);
 
       // const newUser = await userModel.create({ username: 'George' });
 
@@ -80,15 +81,29 @@ MongoDriver.connect('mongodb://localhost:27017', 'mongoDriver', {
 
       //--------------------------------------------
 
-      const test = userModel.instance({ username: 'test' });
-      console.log(test);
-      await test.save();
-      console.log(test.data._id);
+      // const test = userModel.instance({ username: 'test' });
+      // console.log(test);
+      // await test.save();
+      // console.log(test.data._id);
 
-      const res = await userModel.deleteMany({});
+      // const res = await userModel.deleteMany({});
+
+      // console.log(res);
+
+
+      // ------------HOOKS---------------------
+
+
+      userSchema.post('save', function () {
+        console.log(this.data.username);
+      });
+      const userModel = Model('User', userSchema);
+
+      const test = userModel.instance({ username: 'gkampitakis' });
+
+      const res = await test.save();
 
       console.log(res);
-      
 
 
     } catch (error) {

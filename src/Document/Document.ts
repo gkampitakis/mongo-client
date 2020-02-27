@@ -35,6 +35,10 @@ class _Document extends MongoInstance {
       try {
         if (this.schema) this.beforeStep(this.data);
 
+        this.schema?.executePostHooks('save', this, () => {
+          console.log('Post Save Hook');
+        });
+
         await this.collection.updateOne(
           {
             _id: this.data._id

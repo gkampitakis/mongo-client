@@ -1,6 +1,9 @@
 import { Db, ObjectId } from 'mongodb';
+import kareem from 'kareem';
 
 type FieldType = 'string' | 'number' | 'object' | typeof ObjectId;
+
+type HooksType = 'save' | 'delete' | 'update' | 'remove' | 'create' | 'delete';
 
 interface SchemaModel {
   [key: string]: {
@@ -13,9 +16,36 @@ interface SchemaModel {
 
 export class Schema {
   private _schema: SchemaModel;
+  private hooks: any;
 
   public constructor(schema: SchemaModel) {
     this._schema = schema;
+    this.hooks = new kareem();
+  }
+
+  public post(hook: HooksType, callback: Function) {
+
+    this.hooks.post(hook, callback);
+
+  }
+
+  public pre(hook: HooksType, callback: Function) {
+
+    this.hooks.pre(hook, callback);
+
+  }
+
+  /** @internal */// eslint-disable-next-line @typescript-eslint/no-empty-function
+  public executePreHooks(hook: HooksType, context: any, callback: Function = () => { }) {
+    if (this.hooks._pres.get(hook).length <= 0) return;
+    this.hooks.execPre(hook, context, [context], callback);
+  }
+
+
+  /** @internal */// eslint-disable-next-line @typescript-eslint/no-empty-function
+  public executePostHooks(hook: HooksType, context: any, callback: Function = () => { }) {
+    if (this.hooks._posts.get(hook).length <= 0) return;
+    this.hooks.execPost(hook, context, [context], callback);
   }
 
   /** @internal */
@@ -71,5 +101,6 @@ export class Schema {
  *  ------------ BACKLOG ------------
  *  //TODO: Paths
  *  //TODO: Hooks
+ *  // event emitters
  *  //Populate and schema reference to another Model
  */
