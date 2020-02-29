@@ -1,23 +1,23 @@
 export class Schema {
-  public static SetupCollectionSpy = jest.fn();
-  public static SanitizeDataSpy = jest.fn();
-  public static IsValidSpy = jest.fn();
+	public static SetupCollectionSpy = jest.fn();
+	public static SanitizeDataSpy = jest.fn();
+	public static IsValidSpy = jest.fn();
 
-  public setupCollection(collectionName: any, db: any) {
-    Schema.SetupCollectionSpy(...arguments);
+	public setupCollection(collectionName: any, db: any) {
+		Schema.SetupCollectionSpy(...arguments);
 
-    return;
-  }
+		return;
+	}
 
-  public sanitizeData(data: any) {
-    Schema.SanitizeDataSpy(...arguments);
+	public sanitizeData(data: any) {
+		Schema.SanitizeDataSpy(...arguments);
 
-    return data;
-  }
+		return data;
+	}
 
-  public isValid(data: any, flag: boolean) {
-    Schema.IsValidSpy(...arguments);
+	public isValid(data: any, flag: boolean) {
+		Schema.IsValidSpy(...arguments);
 
-    return true;
-  }
+		return true;
+	}
 }
