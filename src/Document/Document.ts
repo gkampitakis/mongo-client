@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/class-name-casing */
 import { ObjectID } from 'mongodb';
-import { Schema } from '../Schema/Schema';
+import { Schema, SchemaModel } from '../Schema/Schema';
 import { MongoInstance } from '../MongoInstance/MongoInstance';
-import { stripObject } from '../Utils/Utils';
+import { isEmptyObject, stripObject } from '../Utils/Utils';
 
 /** @internal */
 class _Document extends MongoInstance {
@@ -13,13 +13,17 @@ class _Document extends MongoInstance {
 
 		this.data = data;
 
-		if (schema) this.beforeStep(data);
+		if (schema && !isEmptyObject(schema.schemaObject)) this.prepareData(data);
 	}
 
 	public remove = (): Promise<{}> => {
 		return new Promise(async (resolve, reject) => {
 			try {
+				await this._schema?.executePreHooks('delete', this);
+
 				await this.collection.deleteOne({ _id: new ObjectID(this.data._id) });
+
+				await this._schema?.executePreHooks('delete', this);
 
 				resolve(stripObject(this));
 			} catch (error) {
@@ -33,11 +37,9 @@ class _Document extends MongoInstance {
 
 		return new Promise(async (resolve, reject) => {
 			try {
-				if (this.schema) this.beforeStep(this.data);
+				if (this._schema) this.prepareData(this.data);
 
-				this.schema?.executePostHooks('save', this, () => {
-					console.log('Post Save Hook');
-				});
+				await this._schema?.executePreHooks('save', this);
 
 				await this.collection.updateOne(
 					{
@@ -46,6 +48,8 @@ class _Document extends MongoInstance {
 					{ $set: this.data },
 					{ upsert: true }
 				);
+
+				await this._schema?.executePostHooks('save', this);
 
 				resolve(stripObject(this));
 			} catch (error) {
@@ -58,9 +62,13 @@ class _Document extends MongoInstance {
 		return this.data;
 	};
 
-	private beforeStep(data: any) {
-		this.data = this.schema!.sanitizeData(data);
-		this.schema!.isValid(data);
+	get schema() {
+		return this._schema?.schemaObject;
+	}
+
+	private prepareData(data: any) {
+		this.data = this._schema!.sanitizeData(data);
+		this._schema!.isValid(data);
 	}
 }
 
@@ -74,5 +82,6 @@ export type Document<data = any> = {
 	lean: () => { _id?: string } & data;
 	save: () => void;
 	remove: () => Promise<any>;
+	schema: SchemaModel | undefined;
 	collectionName: string;
 };

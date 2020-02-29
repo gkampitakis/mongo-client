@@ -2,7 +2,7 @@ import { Collection, Db } from 'mongodb';
 
 export abstract class MongoInstance {
 	public readonly _collectionName: string;
-	public readonly schema: any;
+	public readonly _schema: any;
 	public static database: Db;
 
 	public static UpdateOneSpy = jest.fn();
@@ -18,7 +18,7 @@ export abstract class MongoInstance {
 
 	public constructor(collectionName: string, schema: any) {
 		this._collectionName = collectionName;
-		this.schema = schema;
+		this._schema = schema;
 	}
 
 	get collectionName(): string {

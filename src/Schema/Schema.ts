@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { Db, ObjectId } from 'mongodb';
+import { stripObject } from '../Utils/Utils';
 import kareem from 'kareem';
 
 type FieldType = 'string' | 'number' | 'object' | typeof ObjectId;
 
 type HooksType = 'save' | 'delete' | 'update' | 'remove' | 'create' | 'delete';
 
-interface SchemaModel {
+export interface SchemaModel {
 	[key: string]: {
 		type: FieldType | { type: FieldType; ref: Schema }[]; //TODO: this will need further investigation //BUG: this should have a model reference
 		required?: boolean;
@@ -24,6 +25,10 @@ export class Schema {
 		this.hooks = new kareem();
 	}
 
+	get schemaObject(): SchemaModel {
+		return this._schema;
+	}
+
 	public post(hook: HooksType, callback: Function) {
 		this.hooks.post(hook, callback);
 	}
@@ -33,15 +38,25 @@ export class Schema {
 	}
 
 	/** @internal */
-	public executePreHooks(hook: HooksType, context: any, callback: Function = () => {}) {
-		if (this.hooks._pres.get(hook).length <= 0) return;
-		this.hooks.execPre(hook, context, [context], callback);
+	public executePreHooks(hook: HooksType, context: any): Promise<void> {
+		return new Promise(resolve => {
+			if (this.hooks._pres.size <= 0) return resolve();
+
+			this.hooks.execPre(hook, stripObject(context), [context], () => {
+				resolve();
+			});
+		});
 	}
 
 	/** @internal */
-	public executePostHooks(hook: HooksType, context: any, callback: Function = () => {}) {
-		if (this.hooks._posts.get(hook).length <= 0) return;
-		this.hooks.execPost(hook, context, [context], callback);
+	public executePostHooks(hook: HooksType, context: any): Promise<void> {
+		return new Promise(resolve => {
+			if (this.hooks._posts.size <= 0) return resolve();
+
+			this.hooks.execPost(hook, stripObject(context), [context], () => {
+				resolve();
+			});
+		});
 	}
 
 	/** @internal */
@@ -96,7 +111,6 @@ export class Schema {
 /**
  *  ------------ BACKLOG ------------
  *  //TODO: Paths
- *  //TODO: Hooks
- *  // event emitters
  *  //Populate and schema reference to another Model
+ *  //TODO: support hooks without schema restrictions
  */

@@ -25,7 +25,7 @@ class InternalModel extends MongoInstance {
 
 				if (!result) return resolve(null);
 
-				const wrappedDoc = Document(this.collectionName, result, this.schema);
+				const wrappedDoc = Document(this.collectionName, result, this._schema);
 
 				resolve(wrappedDoc);
 			} catch (error) {
@@ -45,17 +45,17 @@ class InternalModel extends MongoInstance {
 
 		return new Promise(async (resolve, reject) => {
 			try {
-				const validData = this.schema?.sanitizeData(update) || update;
+				const validData = this._schema?.sanitizeData(update) || update;
 
 				if (isEmptyObject(validData)) return resolve(null);
 
-				this.schema?.isValid(update, true);
+				this._schema?.isValid(update, true);
 
 				const result = await this.collection.findOneAndUpdate({ _id }, { $set: validData }, options);
 
 				if (!result.value) return resolve(null);
 
-				const wrappedDoc = Document(this.collectionName, result.value, this.schema);
+				const wrappedDoc = Document(this.collectionName, result.value, this._schema);
 
 				resolve(wrappedDoc);
 			} catch (error) {
@@ -76,13 +76,13 @@ class InternalModel extends MongoInstance {
 	}
 
 	public instance<Generic extends ExtendableObject>(data: Generic): Document<Generic & ExtendableObject> {
-		return Document<Generic & ExtendableObject>(this.collectionName, data, this.schema);
+		return Document<Generic & ExtendableObject>(this.collectionName, data, this._schema);
 	}
 
 	public create<Generic>(data: Generic): Promise<Document<Generic>> {
 		return new Promise(async (resolve, reject) => {
 			try {
-				const wrappedDoc = Document(this.collectionName, data, this.schema);
+				const wrappedDoc = Document(this.collectionName, data, this._schema);
 
 				await this.collection.insertOne(wrappedDoc.data);
 
@@ -146,5 +146,6 @@ interface ExtendableObject {
  *  //TODO: schema validation wherever needed
  *  //FIXME: jenkins file
  *  //TODO: populate ??
- *  //TODO: husky hooks
+ *  //TODO: support hooks without schema restrictions
+ *
  */

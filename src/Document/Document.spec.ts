@@ -3,6 +3,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Document } from './Document';
 import mongodb, { MongoClient, ObjectID } from 'mongodb';
 import { Schema } from '../Schema/Schema';
+import { concatSeries } from 'async';
 
 jest.mock('../Utils/Utils');
 jest.mock('../MongoInstance/MongoInstance');
@@ -37,6 +38,10 @@ describe('Document', () => {
 		SchemaMock.SetupCollectionSpy.mockClear();
 		SchemaMock.SanitizeDataSpy.mockClear();
 		SchemaMock.IsValidSpy.mockClear();
+		SchemaMock.PreHookSpy.mockClear();
+		SchemaMock.PostHookSpy.mockClear();
+		SchemaMock.ExecutePreHooksSpy.mockClear();
+		SchemaMock.ExecutePostHooksSpy.mockClear();
 		MongoInstanceMock.GetCollectionSpy.mockClear();
 		MongoInstanceMock.GetCollectionNameSpy.mockClear();
 		ObjectIdSpy.mockClear();
@@ -46,14 +51,25 @@ describe('Document', () => {
 		/**Mongo DB operations Spies */
 		MongoInstanceMock.UpdateOneSpy.mockClear();
 		MongoInstanceMock.DeleteOneSpy.mockClear();
+
+		SchemaMock.schemaObject = {};
 	});
 
 	describe('Constructor', () => {
 		it('should call the stripObject/sanitizeData/isValid and return an object', () => {
-			Document('document_test', {}, new Schema({}));
+			SchemaMock.schemaObject = { test: { type: 'string' } };
+			Document('document_test', {}, new Schema({ test: { type: 'string' } }));
 
 			expect(SchemaMock.IsValidSpy).toHaveBeenNthCalledWith(1, {});
 			expect(SchemaMock.SanitizeDataSpy).toHaveBeenNthCalledWith(1, {});
+			expect(StripObjectSpy).toHaveBeenCalledTimes(1);
+		});
+
+		it('Should not call the valid/sanitize data if schema has empty object model', () => {
+			Document('document_test', new Schema({}));
+
+			expect(SchemaMock.IsValidSpy).not.toHaveBeenCalled();
+			expect(SchemaMock.SanitizeDataSpy).not.toHaveBeenCalled();
 			expect(StripObjectSpy).toHaveBeenCalledTimes(1);
 		});
 
@@ -66,7 +82,17 @@ describe('Document', () => {
 		});
 	});
 
+	describe('Method get schema', () => {
+		it('Should return the schema object', () => {
+			SchemaMock.schemaObject = { test: { type: 'string' } };
+			const doc = Document('document_test', {}, new Schema({ test: { type: 'string' } }));
+
+			expect(doc.schema).toEqual({ test: { type: 'string' } });
+		});
+	});
+
 	describe('Method remove', () => {
+		//TODO: here spies for the hooks as wells
 		it('Should call delete operation', async () => {
 			const doc = Document('document_test', {}, new Schema({}));
 
@@ -118,6 +144,41 @@ describe('Document', () => {
 				{ upsert: true }
 			);
 			expect(result).toEqual(doc);
+		});
+
+		describe('When schema is present', () => {
+			it('Should call the pre/post hooks', async () => {
+				const schema = new Schema({}),
+					callbackHookSpy = jest.fn(),
+					doc = Document('document_test', {}, schema);
+
+				schema.pre('save', function() {
+					callbackHookSpy();
+				});
+
+				schema.post('save', function() {
+					callbackHookSpy();
+				});
+
+				await doc.save();
+
+				expect(SchemaMock.PreHookSpy).toHaveBeenNthCalledWith(1, 'save', expect.any(Function));
+				expect(SchemaMock.PostHookSpy).toHaveBeenNthCalledWith(1, 'save', expect.any(Function));
+				expect(callbackHookSpy).toHaveBeenCalledTimes(2);
+				expect(SchemaMock.ExecutePostHooksSpy).toHaveBeenNthCalledWith(1, 'save', expect.any(Object));
+				expect(SchemaMock.ExecutePreHooksSpy).toHaveBeenNthCalledWith(1, 'save', expect.any(Object));
+			});
+		});
+
+		describe('When schema is not present', () => {
+			it('Should not call the execute pre/post hooks', async () => {
+				const doc = Document('document_test', {});
+
+				await doc.save();
+
+				expect(SchemaMock.ExecutePostHooksSpy).not.toHaveBeenCalled();
+				expect(SchemaMock.ExecutePreHooksSpy).not.toHaveBeenCalled();
+			});
 		});
 	});
 

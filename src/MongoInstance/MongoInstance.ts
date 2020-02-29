@@ -3,12 +3,12 @@ import { Collection, Db } from 'mongodb';
 
 export abstract class MongoInstance {
 	private readonly _collectionName: string;
-	protected readonly schema: Schema | undefined;
+	protected readonly _schema: Schema | undefined;
 	protected static database: Db;
 
 	public constructor(collectionName: string, schema?: Schema) {
 		this._collectionName = collectionName;
-		this.schema = schema;
+		this._schema = schema;
 	}
 
 	get collectionName(): string {

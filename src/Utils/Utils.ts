@@ -20,6 +20,7 @@ export function stripObject(document: Document): Document {
 		lean: document.lean,
 		save: document.save,
 		remove: document.remove,
-		collectionName: document.collectionName
+		collectionName: document.collectionName,
+		schema: document.schema
 	};
 }
