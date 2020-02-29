@@ -21,7 +21,7 @@ export class Schema {
 		callback();
 	}
 
-	get schemaObject() {
+	get schemaDefinition() {
 		return Schema.schemaObject;
 	}
 

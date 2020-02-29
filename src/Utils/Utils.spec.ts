@@ -11,6 +11,10 @@ describe('Utils', () => {
 			expect(isEmptyObject(testObject)).toBe(true);
 		});
 
+		it('Should return true if no object', () => {
+			expect(isEmptyObject()).toBe(true);
+		});
+
 		it('Should return false if object is not empty', () => {
 			const testObject = {
 				field: 'test',

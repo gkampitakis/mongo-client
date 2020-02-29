@@ -12,7 +12,7 @@ function objectID(id: string) {
 
 function isEmptyObject(data: any) {
 	IsEmptyObjectSpy(...arguments);
-
+	if (!data) return false;
 	return Object.keys(data).length === 0;
 }
 

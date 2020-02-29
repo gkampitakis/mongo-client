@@ -17,15 +17,15 @@ export interface SchemaModel {
 }
 
 export class Schema {
-	private _schema: SchemaModel;
+	private _schema: SchemaModel | undefined;
 	private hooks: any;
 
-	public constructor(schema: SchemaModel) {
+	public constructor(schema?: SchemaModel) {
 		this._schema = schema;
 		this.hooks = new kareem();
 	}
 
-	get schemaObject(): SchemaModel {
+	get schemaDefinition(): SchemaModel | undefined {
 		return this._schema;
 	}
 
@@ -61,6 +61,7 @@ export class Schema {
 
 	/** @internal */
 	public isValid(document: any, ignoreRequired = false) {
+		if (!this._schema) return;
 		const schema = this._schema;
 
 		for (const field in schema) {
@@ -77,6 +78,7 @@ export class Schema {
 
 	/** @internal */
 	public sanitizeData(document: any) {
+		if (!this._schema) return document;
 		const schema = this._schema,
 			sanitizedDoc: any = {};
 
@@ -112,5 +114,4 @@ export class Schema {
  *  ------------ BACKLOG ------------
  *  //TODO: Paths
  *  //Populate and schema reference to another Model
- *  //TODO: support hooks without schema restrictions
  */

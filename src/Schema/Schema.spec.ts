@@ -78,6 +78,12 @@ describe('Schema', () => {
 
 			expect(() => schema.isValid({ username: 'test' })).not.toThrowError();
 		});
+
+		it('Should not throw error if not schema provided', () => {
+			const schema = new Schema();
+
+			expect(() => schema.isValid({ test: 'test' })).not.toThrowError();
+		});
 	});
 
 	describe('Method sanitizeData', () => {
@@ -108,6 +114,22 @@ describe('Schema', () => {
 					}
 				}
 			});
+		});
+
+		it('Should return the document if not schema', () => {
+			const schema = new Schema(),
+				data = {
+					_id: '12345',
+					test: 'test',
+					username: {
+						newName: {
+							test: 'test'
+						}
+					},
+					blue: { username: 'test' }
+				};
+
+			expect(schema.sanitizeData(data)).toEqual(data);
 		});
 	});
 
@@ -163,7 +185,7 @@ describe('Schema', () => {
 
 	describe('Method pre/post', () => {
 		it('Should call the hooks pre/post function', () => {
-			const schema = new Schema({});
+			const schema = new Schema();
 
 			schema.post('save', () => 'test');
 			schema.pre('save', () => 'test');
@@ -175,7 +197,7 @@ describe('Schema', () => {
 
 	describe('Method execute pre/post hooks', () => {
 		it('Should call the execute pre/post hooks function if hooks registered', async () => {
-			const schema = new Schema({});
+			const schema = new Schema();
 
 			KareemMock._pres.set('test', () => 'test');
 			KareemMock._posts.set('test', () => 'test');
@@ -191,7 +213,7 @@ describe('Schema', () => {
 			KareemMock._pres = new Map();
 			KareemMock._posts = new Map();
 
-			const schema = new Schema({});
+			const schema = new Schema();
 
 			await schema.executePostHooks('save', () => 'test');
 			await schema.executePreHooks('save', () => 'test');

@@ -13,7 +13,7 @@ class _Document extends MongoInstance {
 
 		this.data = data;
 
-		if (schema && !isEmptyObject(schema.schemaObject)) this.prepareData(data);
+		this.prepareData(data);
 	}
 
 	public remove = (): Promise<{}> => {
@@ -37,7 +37,7 @@ class _Document extends MongoInstance {
 
 		return new Promise(async (resolve, reject) => {
 			try {
-				if (this._schema) this.prepareData(this.data);
+				this.prepareData(this.data);
 
 				await this._schema?.executePreHooks('save', this);
 
@@ -63,10 +63,11 @@ class _Document extends MongoInstance {
 	};
 
 	get schema() {
-		return this._schema?.schemaObject;
+		return this._schema?.schemaDefinition;
 	}
 
 	private prepareData(data: any) {
+		if (!this._schema || isEmptyObject(this._schema.schemaDefinition)) return;
 		this.data = this._schema!.sanitizeData(data);
 		this._schema!.isValid(data);
 	}

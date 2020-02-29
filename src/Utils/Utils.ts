@@ -2,7 +2,8 @@ import { Document } from '../Document/Document';
 import { ObjectID } from 'mongodb';
 
 /** @internal */
-export function isEmptyObject(object: {}): boolean {
+export function isEmptyObject(object?: {}): boolean {
+	if (!object) return true;
 	return Object.keys(object).length === 0;
 }
 

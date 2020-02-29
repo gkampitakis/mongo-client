@@ -3,7 +3,6 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Document } from './Document';
 import mongodb, { MongoClient, ObjectID } from 'mongodb';
 import { Schema } from '../Schema/Schema';
-import { concatSeries } from 'async';
 
 jest.mock('../Utils/Utils');
 jest.mock('../MongoInstance/MongoInstance');
@@ -66,7 +65,7 @@ describe('Document', () => {
 		});
 
 		it('Should not call the valid/sanitize data if schema has empty object model', () => {
-			Document('document_test', new Schema({}));
+			Document('document_test', new Schema());
 
 			expect(SchemaMock.IsValidSpy).not.toHaveBeenCalled();
 			expect(SchemaMock.SanitizeDataSpy).not.toHaveBeenCalled();
@@ -89,12 +88,16 @@ describe('Document', () => {
 
 			expect(doc.schema).toEqual({ test: { type: 'string' } });
 		});
+
+		it('Should return undefined if no schemaDefinition', () => {
+			const doc = Document('document_test', {});
+			expect(doc.schema).toBeUndefined();
+		});
 	});
 
 	describe('Method remove', () => {
-		//TODO: here spies for the hooks as wells
 		it('Should call delete operation', async () => {
-			const doc = Document('document_test', {}, new Schema({}));
+			const doc = Document('document_test', {}, new Schema());
 
 			await doc.save();
 
@@ -103,14 +106,26 @@ describe('Document', () => {
 			expect(MongoInstanceMock.DeleteOneSpy).toHaveBeenNthCalledWith(1, { _id: new ObjectID(doc.data._id) });
 			expect(result).toEqual(doc);
 		});
+
+		describe('When schema is not present', () => {
+			it('Should not call the execute pre/post hooks', async () => {
+				const doc = Document('document_test', {});
+
+				await doc.remove();
+
+				expect(SchemaMock.ExecutePostHooksSpy).not.toHaveBeenCalled();
+				expect(SchemaMock.ExecutePreHooksSpy).not.toHaveBeenCalled();
+			});
+		});
 	});
 
 	describe('Method save', () => {
 		it('Should call the get collection/save/isValid/sanitizeData', async () => {
+			SchemaMock.schemaObject = { testField: { type: 'object' } };
 			const data = {
 					testField: { name: 'test' }
 				},
-				doc = Document('document_test', data, new Schema({}));
+				doc = Document('document_test', data, new Schema({ testField: { type: 'object' } }));
 
 			const result = await doc.save();
 
@@ -148,7 +163,7 @@ describe('Document', () => {
 
 		describe('When schema is present', () => {
 			it('Should call the pre/post hooks', async () => {
-				const schema = new Schema({}),
+				const schema = new Schema(),
 					callbackHookSpy = jest.fn(),
 					doc = Document('document_test', {}, schema);
 
