@@ -1,83 +1,87 @@
 {
-  "name": "@gkampitakis/mongoDriver",
-  "version": "1.0.0",
-  "description": "A module for node.js connecting mongodb",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
-  "scripts": {
-    "test": "npm run clean && npm run lint && jest",
-    "dev": "ts-node-dev --respawn --transpileOnly ./dev.ts",
-    "build": "npm run clean && tsc",
-    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
-    "lint": "eslint src/**/*.ts",
-    "clean": "rimraf ./lib ./coverage",
-    "prepublishOnly": "npm run format && npm run build"
-  },
-  "keywords": [
-    "mongodb",
-    "mongodbDriver"
-  ],
-  "author": "Georgios Kampitakis",
-  "license": "ISC",
-  "dependencies": {
-    "kareem": "^2.3.1",
-    "mongodb": "^3.5.4",
-    "typescript": "^3.8.2"
-  },
-  "devDependencies": {
-    "@shelf/jest-mongodb": "^1.1.3",
-    "@types/async": "^3.0.8",
-    "@types/jest": "^25.1.3",
-    "@types/mongodb": "^3.3.16",
-    "@types/node": "^13.7.6",
-    "@typescript-eslint/eslint-plugin": "^2.21.0",
-    "@typescript-eslint/parser": "^2.21.0",
-    "eslint": "^6.8.0",
-    "eslint-config-airbnb-base": "^14.0.0",
-    "eslint-plugin-import": "^2.20.1",
-    "husky": "^4.2.3",
-    "jest": "^25.1.0",
-    "jest-sonar-reporter": "^2.0.0",
-    "prettier": "^1.19.1",
-    "rimraf": "^3.0.2",
-    "ts-jest": "^25.2.1",
-    "ts-node-dev": "^1.0.0-pre.44"
-  },
-  "files": [
-    "lib/**/*"
-  ],
-  "jest": {
-    "verbose": true,
-    "collectCoverage": true,
-    "moduleFileExtensions": [
-      "ts",
-      "js"
-    ],
-    "transform": {
-      "\\.(ts|tsx)$": "ts-jest"
-    },
-    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
-    "testResultsProcessor": "jest-sonar-reporter",
-    "collectCoverageFrom": [
-      "src/**/*.{ts,tsx}",
-      "!src/**/index.{ts,tsx}",
-      "!src/**/*.d.ts"
-    ],
-    "coverageThreshold": {
-      "global": {
-        "branches": 90,
-        "functions": 90,
-        "lines": 90,
-        "statements": 90
-      }
-    }
-  },
-  "jestSonar": {
-    "reportPath": "coverage",
-    "reportFile": "test-report.xml",
-    "indent": 4
-  },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  }
+	"name": "@gkampitakis/mongo-driver",
+	"version": "1.0.0",
+	"description": "A module for node.js connecting mongodb",
+	"main": "lib/index.js",
+	"types": "lib/index.d.ts",
+	"scripts": {
+		"test": "npm run clean && npm run lint && jest",
+		"dev": "ts-node-dev --respawn --transpileOnly ./dev.ts",
+		"build": "npm run clean && tsc",
+		"format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
+		"lint": "eslint src/**/*.ts",
+		"clean": "rimraf ./lib ./coverage",
+		"prepublishOnly": "npm run test && npm run build"
+	},
+	"keywords": [
+		"mongodb",
+		"mongodbDriver"
+	],
+	"author": "Georgios Kampitakis",
+	"license": "ISC",
+	"dependencies": {
+		"kareem": "~2.3.1",
+		"mongodb": "~3.5.4"
+	},
+	"devDependencies": {
+		"typescript": "^3.8.2",
+		"@shelf/jest-mongodb": "^1.1.3",
+		"@types/async": "^3.0.8",
+		"@types/jest": "^25.1.3",
+		"@types/mongodb": "^3.3.16",
+		"@types/node": "^13.7.6",
+		"@typescript-eslint/eslint-plugin": "^2.21.0",
+		"@typescript-eslint/parser": "^2.21.0",
+		"eslint": "^6.8.0",
+		"eslint-config-airbnb-base": "^14.0.0",
+		"eslint-plugin-import": "^2.20.1",
+		"husky": "^4.2.3",
+		"jest": "^25.1.0",
+		"jest-sonar-reporter": "^2.0.0",
+		"prettier": "^1.19.1",
+		"rimraf": "^3.0.2",
+		"ts-jest": "^25.2.1",
+		"ts-node-dev": "^1.0.0-pre.44"
+	},
+	"files": [
+		"lib/**/*"
+	],
+	"jest": {
+		"verbose": true,
+		"collectCoverage": true,
+		"moduleFileExtensions": [
+			"ts",
+			"js"
+		],
+		"transform": {
+			"\\.(ts|tsx)$": "ts-jest"
+		},
+		"testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+		"testResultsProcessor": "jest-sonar-reporter",
+		"collectCoverageFrom": [
+			"src/**/*.{ts,tsx}",
+			"!src/**/index.{ts,tsx}",
+			"!src/**/*.d.ts"
+		],
+		"coverageThreshold": {
+			"global": {
+				"branches": 90,
+				"functions": 90,
+				"lines": 90,
+				"statements": 90
+			}
+		}
+	},
+	"jestSonar": {
+		"reportPath": "coverage",
+		"reportFile": "test-report.xml",
+		"indent": 4
+	},
+	"publishConfig": {
+		"registry": "https://npm.pkg.github.com/"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/gkampitakis/MongoDriver.git"
+	}
 }
