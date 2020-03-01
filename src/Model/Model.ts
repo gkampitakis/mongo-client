@@ -50,12 +50,20 @@ class InternalModel extends MongoInstance {
 				if (isEmptyObject(validData)) return resolve(null);
 
 				this._schema?.isValid(update, true);
+				//TODO: check if here the update object is correct
+				await this._schema?.executePreHooks('update', Document(this.collectionName, update, this._schema));
 
 				const result = await this.collection.findOneAndUpdate({ _id }, { $set: validData }, options);
 
-				if (!result.value) return resolve(null);
+				if (!result.value) {
+					await this._schema?.executePostHooks('update', {});
+
+					return resolve(null);
+				}
 
 				const wrappedDoc = Document(this.collectionName, result.value, this._schema);
+
+				await this._schema?.executePostHooks('update', wrappedDoc);
 
 				resolve(wrappedDoc);
 			} catch (error) {
@@ -65,9 +73,15 @@ class InternalModel extends MongoInstance {
 	}
 
 	public deleteMany(filter: FilterQuery<object>) {
+		//TODO: check the hooks here as well
 		return new Promise(async (resolve, reject) => {
 			try {
+				await this._schema?.executePreHooks('delete', {});
+
 				await this.collection.deleteMany(filter);
+
+				await this._schema?.executePostHooks('delete', {});
+
 				resolve();
 			} catch (error) {
 				reject(error);
@@ -84,7 +98,11 @@ class InternalModel extends MongoInstance {
 			try {
 				const wrappedDoc = Document(this.collectionName, data, this._schema);
 
+				await this._schema?.executePreHooks('create', wrappedDoc);
+
 				await this.collection.insertOne(wrappedDoc.data);
+
+				await this._schema?.executePostHooks('create', wrappedDoc);
 
 				resolve(wrappedDoc);
 			} catch (error) {
@@ -139,13 +157,8 @@ interface ExtendableObject {
 
 /**
  *  ------------ BACKLOG ------------
- *
- *  Implement all functions used at personal projects
  *  //TODO: find the way that you write comments and they are shown above in the editor
  *  //TODO: benchmarks
- *  //TODO: schema validation wherever needed
  *  //FIXME: jenkins file
  *  //TODO: populate ??
- *  //TODO: support hooks without schema restrictions
- *
  */

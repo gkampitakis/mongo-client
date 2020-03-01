@@ -39,6 +39,8 @@ describe('Model', () => {
 		SchemaMock.SetupCollectionSpy.mockClear();
 		SchemaMock.SanitizeDataSpy.mockClear();
 		SchemaMock.IsValidSpy.mockClear();
+		SchemaMock.ExecutePreHooksSpy.mockClear();
+		SchemaMock.ExecutePostHooksSpy.mockClear();
 		MongoInstanceMock.GetCollectionSpy.mockClear();
 		MongoInstanceMock.GetCollectionNameSpy.mockClear();
 		ObjectIdSpy.mockClear();
@@ -54,7 +56,7 @@ describe('Model', () => {
 
 	describe('Constructor', () => {
 		it('Should call the prepare collection if it/s the 1st time', done => {
-			const schema = new Schema({});
+			const schema = new Schema();
 
 			Model('test', schema);
 
@@ -65,7 +67,7 @@ describe('Model', () => {
 		});
 
 		it('Should not call again the prepare collection for same collection', done => {
-			const schema = new Schema({});
+			const schema = new Schema();
 
 			Model('cache', schema);
 			Model('cache', schema);
@@ -88,7 +90,7 @@ describe('Model', () => {
 
 	describe('Method instance', () => {
 		it('Should call the document function', () => {
-			const schema = new Schema({}),
+			const schema = new Schema(),
 				testModel = Model('test', schema),
 				data = { test: 'Data' },
 				document = testModel.instance(data);
@@ -100,7 +102,7 @@ describe('Model', () => {
 
 	describe('Method create', () => {
 		it('Should call the document function', async () => {
-			const schema = new Schema({}),
+			const schema = new Schema(),
 				testModel = Model('test1', schema),
 				data = { test: 'Data' },
 				document = await testModel.create(data);
@@ -113,11 +115,33 @@ describe('Model', () => {
 			expect(DocumentSpy).toHaveBeenNthCalledWith(1, 'test1', data, schema);
 			expect(MongoInstanceMock.InsertOneSpy).toHaveBeenNthCalledWith(1, data);
 		});
+
+		it('Should call execute pre/post hooks if schema provided', async () => {
+			const testModel = Model('CreateModel', new Schema()),
+				data = { test: 'test' };
+
+			await testModel.create(data);
+
+			expect(SchemaMock.ExecutePostHooksSpy).toHaveBeenCalledTimes(1);
+			expect(SchemaMock.ExecutePreHooksSpy).toHaveBeenCalledTimes(1);
+			expect(MongoInstanceMock.InsertOneSpy).toHaveBeenCalled();
+		});
+
+		it('Should not call execute pre/post hooks if schema not provided', async () => {
+			const testModel = Model('CreateModel1'),
+				data = { test: 'test' };
+
+			await testModel.create(data);
+
+			expect(SchemaMock.ExecutePostHooksSpy).toHaveBeenCalledTimes(0);
+			expect(SchemaMock.ExecutePreHooksSpy).toHaveBeenCalledTimes(0);
+			expect(MongoInstanceMock.InsertOneSpy).toHaveBeenCalled();
+		});
 	});
 
 	describe('Method deleteMany', () => {
 		it('should call the deleteMany mongo function', async () => {
-			const schema = new Schema({}),
+			const schema = new Schema(),
 				testModel = Model('test1', schema);
 
 			const res = await testModel.deleteMany({});
@@ -125,11 +149,31 @@ describe('Model', () => {
 			expect(MongoInstanceMock.DeleteManySpy).toHaveBeenNthCalledWith(1, {});
 			expect(res).toBeUndefined;
 		});
+
+		it('Should call execute pre/post hooks if schema provided', async () => {
+			const testModel = Model('SchemaHooks', new Schema());
+
+			await testModel.deleteMany({});
+
+			expect(SchemaMock.ExecutePostHooksSpy).toHaveBeenCalledTimes(1);
+			expect(SchemaMock.ExecutePreHooksSpy).toHaveBeenCalledTimes(1);
+			expect(MongoInstanceMock.DeleteManySpy).toHaveBeenCalled();
+		});
+
+		it('Should not call execute pre/post hooks if schema not provided', async () => {
+			const testModel = Model('SchemaHooksDelete');
+
+			await testModel.deleteMany({});
+
+			expect(SchemaMock.ExecutePostHooksSpy).toHaveBeenCalledTimes(0);
+			expect(SchemaMock.ExecutePreHooksSpy).toHaveBeenCalledTimes(0);
+			expect(MongoInstanceMock.DeleteManySpy).toHaveBeenCalled();
+		});
 	});
 
 	describe('Method findByIdAndUpdate', () => {
 		it('Should return null if not found', async () => {
-			const schema = new Schema({}),
+			const schema = new Schema(),
 				testModel = Model('test2', schema);
 
 			const result = await testModel.findByIdAndUpdate(
@@ -152,7 +196,7 @@ describe('Model', () => {
 		});
 
 		it('Should return null if empty object is provided', async () => {
-			const schema = new Schema({}),
+			const schema = new Schema(),
 				testModel = Model('test2', schema);
 
 			const result = await testModel.findByIdAndUpdate('5e4acf03d8e9435b2a2640ae', {}, { upsert: false });
@@ -165,7 +209,7 @@ describe('Model', () => {
 		});
 
 		it('Should return a wrapped object', async () => {
-			const schema = new Schema({}),
+			const schema = new Schema(),
 				testModel = Model('test2', schema),
 				data = { test: 'test' },
 				updatedData = { test: 'test2' };
@@ -207,11 +251,43 @@ describe('Model', () => {
 				undefined
 			);
 		});
+
+		it('Should call execute pre/post hooks if schema provided', async () => {
+			const testModel = Model('Schema', new Schema()),
+				data = { test: 'test' },
+				updatedData = { test: { test: 'test' } };
+
+			const result = await testModel.create(data);
+			SchemaMock.ExecutePostHooksSpy.mockClear();
+			SchemaMock.ExecutePreHooksSpy.mockClear();
+
+			await testModel.findByIdAndUpdate(result.data._id as string, updatedData);
+
+			expect(SchemaMock.ExecutePostHooksSpy).toHaveBeenCalledTimes(1);
+			expect(SchemaMock.ExecutePreHooksSpy).toHaveBeenCalledTimes(1);
+			expect(MongoInstanceMock.FindOneAndUpdateSpy).toHaveBeenCalled();
+		});
+
+		it('Should not call execute pre/post hooks if schema not provided', async () => {
+			const testModel = Model('NoSchema'),
+				data = { test: 'test' },
+				updatedData = { test: { test: 'test' } };
+
+			const result = await testModel.create(data);
+			SchemaMock.ExecutePostHooksSpy.mockClear();
+			SchemaMock.ExecutePreHooksSpy.mockClear();
+
+			await testModel.findByIdAndUpdate(result.data._id as string, updatedData);
+
+			expect(SchemaMock.ExecutePostHooksSpy).toHaveBeenCalledTimes(0);
+			expect(SchemaMock.ExecutePreHooksSpy).toHaveBeenCalledTimes(0);
+			expect(MongoInstanceMock.FindOneAndUpdateSpy).toHaveBeenCalled();
+		});
 	});
 
 	describe('Method findById ', () => {
 		it('Should call the objectId', async () => {
-			const schema = new Schema({}),
+			const schema = new Schema(),
 				testModel = Model('test3', schema);
 
 			await testModel.findById('5e4acf03d8e9435b2a2640ae');
@@ -226,7 +302,7 @@ describe('Model', () => {
 
 	describe('Method findOne', () => {
 		it("Should return null if the doc doesn't exist and not proceed", async () => {
-			const schema = new Schema({}),
+			const schema = new Schema(),
 				testModel = Model('test4', schema);
 
 			const result = await testModel.findOne({ name: 'name' });
@@ -238,7 +314,7 @@ describe('Model', () => {
 		});
 
 		it('Should return a wrapped document', async () => {
-			const schema = new Schema({}),
+			const schema = new Schema(),
 				testModel = Model('test5', schema),
 				data = { test: 'test' };
 
