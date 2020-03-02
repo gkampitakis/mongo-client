@@ -6,7 +6,7 @@
 	"types": "lib/index.d.ts",
 	"scripts": {
 		"test": "npm run clean && npm run lint && jest",
-		"dev": "ts-node-dev --respawn --transpileOnly ./dev.ts",
+		"playground": "ts-node-dev --respawn --transpileOnly ./playground.ts",
 		"build": "npm run clean && tsc",
 		"format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
 		"lint": "eslint src/**/*.ts",

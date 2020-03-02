@@ -83,6 +83,9 @@ export class Schema {
 			sanitizedDoc: any = {};
 
 		for (const field in schema) {
+			//BUG: this will cause future bug when the support to boolean value is added
+			if (schema[field].default && !document[field]) document[field] = schema[field].default;
+
 			if (document[field]) {
 				sanitizedDoc[field] = document[field];
 			}
@@ -114,4 +117,7 @@ export class Schema {
  *  ------------ BACKLOG ------------
  *  //TODO: Paths
  *  //Populate and schema reference to another Model
+ *
+ * //FIXME: missing boolean value on schema
+ * //Line  85 we ll have error with boolean
  */
