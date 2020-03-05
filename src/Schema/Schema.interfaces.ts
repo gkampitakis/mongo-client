@@ -72,4 +72,10 @@ interface CommonKeys {
 	not?: SchemaDefinition;
 }
 
+export interface ValidatorOptions {
+	useDefaults: boolean;
+	removeAdditional: 'all' | 'failing' | boolean;
+	allErrors?: boolean;
+}
+
 //TODO: read again the documentation and re revaluate

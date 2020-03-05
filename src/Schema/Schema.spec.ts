@@ -1,5 +1,4 @@
-import { Schema } from './Schema';
-import { Db } from 'mongodb';
+import { Schema } from './';
 
 jest.mock('kareem');
 
@@ -14,172 +13,74 @@ describe('Schema', () => {
 		KareemMock.ExecutePreSpy.mockClear();
 	});
 
-	describe('Method isValid', () => {
+	describe('Method validate', () => {
 		it('Should throw error if required is missing', () => {
 			schema = new Schema({
-				username: {
-					type: 'string',
-					required: true
-				}
+				type: 'object',
+				properties: {
+					username: {
+						type: 'string'
+					}
+				},
+				required: ['username']
 			});
 
-			expect(() => schema.isValid({})).toThrowError('username field is required');
+			expect(() => schema.validate({})).toThrowError('[required]  - should have required property \'username\'');
 		});
 
 		it("Should throw error if default value doesn't have the same type", () => {
 			schema = new Schema({
-				username: {
-					type: 'string',
-					default: []
+				type: 'object',
+				properties: {
+					username: {
+						type: 'string',
+						default: ['array'] as any
+					}
 				},
-				test: {
-					type: 'string'
-				}
+				required: ['username']
 			});
 
 			expect(() =>
-				schema.isValid({
+				schema.validate({
 					test: 'test'
 				})
-			).toThrowError('username must be type of string');
+			).toThrowError('[type] .username - should be string');
 		});
 
 		it('Should throw error if data are different type of schema', () => {
 			schema = new Schema({
-				username: {
-					type: 'string',
-					required: true
-				}
+				type: 'object',
+				properties: {
+					username: {
+						type: 'string'
+					}
+				},
+				required: ['username']
 			});
 
-			expect(() => schema.isValid({ username: { test: 'test' } })).toThrowError(
-				'username must be type of string'
+			expect(() => schema.validate({ username: { test: 'test' } })).toThrowError(
+				'[type] .username - should be string'
 			);
-		});
-
-		it('Should ignore the required validation', () => {
-			schema = new Schema({
-				username: {
-					type: 'string',
-					required: true
-				}
-			});
-
-			expect(() => schema.isValid({}, true)).not.toThrowError();
 		});
 
 		it('Should not throw error if valid data', () => {
 			schema = new Schema({
-				username: {
-					type: 'string',
-					required: true
-				}
+				type: 'object',
+				properties: {
+					username: {
+						type: 'string'
+					}
+				},
+				required: ['username']
 			});
 
-			expect(() => schema.isValid({ username: 'test' })).not.toThrowError();
+			expect(() => schema.validate({ username: 'test' })).not.toThrowError();
 		});
 
 		it('Should not throw error if not schema provided', () => {
 			const schema = new Schema();
 
-			expect(() => schema.isValid({ test: 'test' })).not.toThrowError();
-		});
-	});
-
-	describe('Method sanitizeData', () => {
-		it('Should remove all non present fields in schema', () => {
-			schema = new Schema({
-				username: {
-					type: 'string',
-					required: true
-				}
-			});
-
-			const data = {
-				_id: '12345',
-				test: 'test',
-				username: {
-					newName: {
-						test: 'test'
-					}
-				},
-				blue: { username: 'test' }
-			};
-
-			expect(schema.sanitizeData(data)).toEqual({
-				_id: '12345',
-				username: {
-					newName: {
-						test: 'test'
-					}
-				}
-			});
-		});
-
-		it('Should return the document if not schema', () => {
-			const schema = new Schema(),
-				data = {
-					_id: '12345',
-					test: 'test',
-					username: {
-						newName: {
-							test: 'test'
-						}
-					},
-					blue: { username: 'test' }
-				};
-
-			expect(schema.sanitizeData(data)).toEqual(data);
-		});
-	});
-
-	describe('Method setupCollection', () => {
-		it('Should create collections and unique indexes based on schema', done => {
-			const createCollectionSpy = jest.fn(),
-				createIndexSpy = jest.fn(),
-				dbMock = {
-					createCollection: (collection: string) => {
-						createCollectionSpy(collection);
-
-						return new Promise(resolve => {
-							resolve({
-								createIndex: (index: object, options: object) => {
-									createIndexSpy(index, options);
-								}
-							});
-						});
-					}
-				};
-
-			schema = new Schema({
-				username: {
-					type: 'string',
-					required: true,
-					unique: true
-				},
-				email: {
-					type: 'string',
-					required: true,
-					unique: true
-				},
-				password: {
-					type: 'string',
-					required: false,
-					unique: false
-				}
-			});
-
-			schema.setupCollection('test', (dbMock as unknown) as Db);
-
-			setTimeout(() => {
-				expect(createIndexSpy.mock.calls).toEqual([
-					[{ username: 1 }, { unique: true }],
-					[{ email: 1 }, { unique: true }]
-				]);
-				expect(createCollectionSpy).toHaveBeenNthCalledWith(1, 'test');
-
-				done();
-			}, 1000);
+			expect(() => schema.validate({ test: 'test' })).not.toThrowError();
 		});
 	});
 

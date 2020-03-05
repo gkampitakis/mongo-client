@@ -1,19 +1,22 @@
+// @ts-nocheck
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { SchemaDefinition } from "./Schema.interfaces";
-import { Db } from 'mongodb';
-import { stripObject } from '../Utils/Utils';
+import { SchemaDefinition, ValidatorOptions } from "./Schema.interfaces";
+import { stripObject } from '../Utils';
 import kareem from 'kareem';
-
+import Ajv, { ErrorObject } from 'ajv';
 
 type HooksType = 'save' | 'delete' | 'update' | 'remove' | 'create' | 'delete';
 
 export class Schema {
   private _schema: SchemaDefinition | undefined;
   private hooks: any;
+  private validator: Ajv.ValidateFunction | undefined;
 
-  public constructor(schema?: SchemaDefinition) {
+  public constructor(schema?: SchemaDefinition, options: ValidatorOptions = { useDefaults: true, removeAdditional: true }) {
     this._schema = schema;
     this.hooks = new kareem();
+    const ajv = new Ajv(options);
+    if (schema) this.validator = ajv.compile(schema);
   }
 
   get schemaDefinition(): SchemaDefinition | undefined {
@@ -50,60 +53,29 @@ export class Schema {
     });
   }
 
-  /** @internal */
-  public isValid(document: any, ignoreRequired = false) {
+  public validate(data: any): object | void {
+
     if (!this._schema) return;
-    const schema = this._schema;
+    //@ts-ignore
+    if (!this.validator(data)) {
+      //@ts-ignore
+      throw new Error(this.getError(this.validator.errors[0]));
 
-    for (const field in schema) {
-      if (schema[field].required && !ignoreRequired && !document[field] && !schema[field].default)
-        throw new Error(`${field} field is required`);
-
-      if (schema[field].default && !document[field]) document[field] = schema[field].default;
-
-      if (document[field] && schema[field].type !== typeof document[field]) {
-        throw new Error(`${field} must be type of ${schema[field].type}`);
-      }
     }
+
+    return data;
+
   }
 
-  /** @internal */
-  public sanitizeData(document: any) {
-    if (!this._schema) return document;
-    const schema = this._schema,
-      sanitizedDoc: any = {};
+  private getError(errorObject: ErrorObject): string {
 
-    for (const field in schema) {
-      if (document[field]) {
-        sanitizedDoc[field] = document[field];
-      }
-    }
+    return `[${errorObject.keyword}] ${errorObject.dataPath} - ${errorObject.message}`;
 
-    if (document._id) sanitizedDoc._id = document._id;
-
-    return sanitizedDoc;
-  }
-
-  /** @internal */
-  public async setupCollection(collectionName: string, db: Db) {
-    const collection = await db.createCollection(collectionName);
-
-    const schema = this._schema;
-
-    for (const field in schema) {
-      if (schema[field].unique) {
-        const index: any = {};
-        index[field] = 1;
-
-        collection.createIndex(index, { unique: true });
-      }
-    }
   }
 }
 
-/**
- *  ------------ BACKLOG ------------
+/**   ------------ BACKLOG ------------
  *  //TODO: Paths
- *  //Populate and schema reference to another Model
- * //TODO: update modules
- */
+//TODO: dont forget the _id handling
+ *
+ **/
