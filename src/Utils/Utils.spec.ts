@@ -1,7 +1,8 @@
-import { isEmptyObject, objectID, stripObject } from './Utils';
+import { extractUniqueValues, isEmptyObject, objectID, stripObject } from './';
 import { ObjectID } from 'mongodb';
 import { Document } from '../Document/Document';
 import { Schema } from '../Schema/Schema';
+import { SchemaDefinition } from '../Schema';
 
 describe('Utils', () => {
 	describe('Function isEmptyObject', () => {
@@ -39,12 +40,46 @@ describe('Utils', () => {
 	});
 
 	describe('Function stripObject', () => {
-		const doc = stripObject(Document('test', {}, new Schema({})));
+		it('Should return the appropriate object', () => {
+			const doc = stripObject(Document('test', {}, new Schema()));
 
-		expect(doc).toHaveProperty('data');
-		expect(doc).toHaveProperty('lean');
-		expect(doc).toHaveProperty('save');
-		expect(doc).toHaveProperty('remove');
-		expect(doc).toHaveProperty('collectionName');
+			expect(doc).toHaveProperty('data');
+			expect(doc).toHaveProperty('lean');
+			expect(doc).toHaveProperty('save');
+			expect(doc).toHaveProperty('remove');
+			expect(doc).toHaveProperty('collectionName');
+		});
+	});
+
+	describe('Function extractUniqueValues', () => {
+		it('Should return the paths with unique values', () => {
+			const object = {
+				test: {
+					name: {
+						unique: true
+					}
+				},
+				test2: {
+					unique: true
+				}
+			};
+
+			expect(extractUniqueValues((object as never) as SchemaDefinition)).toEqual(['test.name', 'test2']);
+		});
+
+		it('Should return nothing if no required', () => {
+			const object = {
+				test: {
+					name: {
+						test: true
+					}
+				},
+				test2: {
+					test: true
+				}
+			};
+
+			expect(extractUniqueValues((object as never) as SchemaDefinition)).toEqual([]);
+		});
 	});
 });
