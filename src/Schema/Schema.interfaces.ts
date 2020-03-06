@@ -1,6 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-export type SchemaDefinition = ObjectSchema | NumberSchema | StringSchema | ArraySchema | BooleanSchema | NullSchema;
+export type SchemaDefinition =
+	| undefined
+	| ObjectSchema
+	| NumberSchema
+	| StringSchema
+	| ArraySchema
+	| BooleanSchema
+	| NullSchema;
 
 interface ObjectSchema extends CommonKeys {
 	type: 'object';
@@ -79,3 +86,4 @@ export interface ValidatorOptions {
 }
 
 //TODO: read again the documentation and re revaluate
+//TODO: Write comments for the interfaces ???

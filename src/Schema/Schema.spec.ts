@@ -25,7 +25,7 @@ describe('Schema', () => {
 				required: ['username']
 			});
 
-			expect(() => schema.validate({})).toThrowError('[required]  - should have required property \'username\'');
+			expect(() => schema.validate({})).toThrowError("[required]  - should have required property 'username'");
 		});
 
 		it("Should throw error if default value doesn't have the same type", () => {
