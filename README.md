@@ -7,6 +7,6 @@ way of supporting schema validation.
 
 ## Commands
 
-- npm run dev An example of simple test case on how to use this module
+- npm run playground An example of simple test case on how to use this module
 - npm run test Jest tests
 - npm run benchmarks [Not yet implemented]
