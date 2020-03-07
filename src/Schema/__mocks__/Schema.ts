@@ -5,7 +5,7 @@ export class Schema {
 	public static ExecutePreHooksSpy = jest.fn();
 	public static ExecutePostHooksSpy = jest.fn();
 
-	public static schemaObject = {};
+	public static schemaDefinition = {};
 
 	public pre(hook: any, callback: any) {
 		Schema.PreHookSpy(...arguments);
@@ -14,7 +14,7 @@ export class Schema {
 	}
 
 	get schemaDefinition() {
-		return Schema.schemaObject;
+		return Schema.schemaDefinition;
 	}
 
 	public post(hook: any, callback: any) {

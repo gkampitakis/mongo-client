@@ -49,12 +49,12 @@ describe('Document', () => {
 		MongoInstanceMock.UpdateOneSpy.mockClear();
 		MongoInstanceMock.DeleteOneSpy.mockClear();
 
-		SchemaMock.schemaObject = {};
+		SchemaMock.schemaDefinition = {};
 	});
 
 	describe('Constructor', () => {
 		it('should call the stripObject/validate and return an object', () => {
-			SchemaMock.schemaObject = { test: { type: 'string' } };
+			SchemaMock.schemaDefinition = { test: { type: 'string' } };
 			Document(
 				'document_test',
 				{},
@@ -87,15 +87,15 @@ describe('Document', () => {
 
 	describe('Method get schema', () => {
 		it('Should return the schema object', () => {
-			SchemaMock.schemaObject = {
+			SchemaMock.schemaDefinition = {
 				type: 'object',
 				properties: {
 					test: { type: 'string' }
 				}
 			};
-			const doc = Document('document_test', {}, new Schema(SchemaMock.schemaObject));
+			const doc = Document('document_test', {}, new Schema(SchemaMock.schemaDefinition));
 
-			expect(doc.schema).toEqual(SchemaMock.schemaObject);
+			expect(doc.schema).toEqual(SchemaMock.schemaDefinition);
 		});
 
 		it('Should return undefined if no schemaDefinition', () => {
@@ -130,10 +130,10 @@ describe('Document', () => {
 
 	describe('Method save', () => {
 		it('Should call the get collection/save/validate', async () => {
-			SchemaMock.schemaObject = { testField: { type: 'object' } };
+			SchemaMock.schemaDefinition = { testField: { type: 'object' } };
 			const data = {
-					testField: { name: 'test' }
-				},
+				testField: { name: 'test' }
+			},
 				doc = Document(
 					'document_test',
 					data,
@@ -163,8 +163,8 @@ describe('Document', () => {
 
 		it('Should not call the validate if not schema provided', async () => {
 			const data = {
-					testField: { name: 'test' }
-				},
+				testField: { name: 'test' }
+			},
 				doc = Document('document_test', data);
 
 			const result = await doc.save();
@@ -186,11 +186,11 @@ describe('Document', () => {
 					callbackHookSpy = jest.fn(),
 					doc = Document('document_test', {}, schema);
 
-				schema.pre('save', function() {
+				schema.pre('save', function () {
 					callbackHookSpy();
 				});
 
-				schema.post('save', function() {
+				schema.post('save', function () {
 					callbackHookSpy();
 				});
 

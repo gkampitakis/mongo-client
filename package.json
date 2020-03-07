@@ -57,6 +57,11 @@
 		"lib/**/*"
 	],
 	"jest": {
+		"globals": {
+			"ts-jest": {
+				"diagnostics": false
+			}
+		},
 		"verbose": true,
 		"collectCoverage": true,
 		"moduleFileExtensions": [

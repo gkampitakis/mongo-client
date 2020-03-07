@@ -37,6 +37,11 @@ describe('Utils', () => {
 			expect(objectID(id)).toBeInstanceOf(ObjectID);
 			expect(objectID(id).toHexString()).toBe(id);
 		});
+
+		it('Should return a new objectId if not parameter provider', () => {
+
+			expect(objectID()).toBeInstanceOf(ObjectID);
+		});
 	});
 
 	describe('Function stripObject', () => {

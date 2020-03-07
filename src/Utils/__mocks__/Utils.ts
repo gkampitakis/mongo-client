@@ -3,9 +3,9 @@ import { ObjectID } from 'mongodb';
 const ObjectIdSpy = jest.fn(),
 	IsEmptyObjectSpy = jest.fn(),
 	StripObjectSpy = jest.fn(),
-	extractUniqueValuesSpy = jest.fn();
+	ExtractUniqueValuesSpy = jest.fn();
 
-function objectID(id: string) {
+function objectID(id?: string) {
 	ObjectIdSpy(...arguments);
 
 	return new ObjectID(id);
@@ -23,7 +23,7 @@ function stripObject(data: any) {
 }
 
 function extractUniqueValues(data: any) {
-	extractUniqueValuesSpy(...arguments);
+	ExtractUniqueValuesSpy(...arguments);
 	return ['mockIndex'];
 }
 
@@ -35,5 +35,5 @@ export {
 	stripObject,
 	StripObjectSpy,
 	extractUniqueValues,
-	extractUniqueValuesSpy
+	ExtractUniqueValuesSpy
 };

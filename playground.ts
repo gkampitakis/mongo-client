@@ -23,7 +23,7 @@ async function Playground() {
     logger.info('Database is setup and running');
 
     const userModel = Model('user');
-    const data = await userModel.create({ username: 'George Kampitakis' }); //TODO: lean option as parameter
+    const data = await userModel.create({ username: 'George Kampitakis' });
 
     console.log('Created document', data);
 

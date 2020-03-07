@@ -10,8 +10,8 @@ export function isEmptyObject(object?: {}): boolean {
 }
 
 /** @internal */
-export function objectID(id: string): ObjectID {
-	if (!ObjectID.isValid(id)) throw new Error('Invalid id provided');
+export function objectID(id?: string): ObjectID { //TEST:
+	if (id && !ObjectID.isValid(id)) throw new Error('Invalid id provided');
 
 	return new ObjectID(id);
 }

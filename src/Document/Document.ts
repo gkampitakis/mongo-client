@@ -32,6 +32,10 @@ class _Document extends MongoInstance {
 		});
 	};
 
+	// public populate(): Promise<Document> {//TODO: implement
+
+	// }
+
 	public save = async (): Promise<Document> => {
 		const id = this.data._id || new ObjectID();
 
@@ -90,5 +94,5 @@ export type Document<data = any> = {
 /**
  *  ------------ BACKLOG ------------
  *
- *  
+ *
  */
