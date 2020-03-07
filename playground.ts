@@ -1,4 +1,4 @@
-import { Schema, MongoDriver, Model, Document } from './index';
+import { Schema, MongoDriver, Model } from './index';
 import pino from 'pino';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 
@@ -11,7 +11,6 @@ function setupDatabase(uri: string, database: string) {
     useUnifiedTopology: true
   });
 }
-
 
 //TODO: expand this and make it more clear in the future here all the uses cases are going to be documented
 async function Playground() {
@@ -43,7 +42,6 @@ async function Playground() {
       },
       required: ['username', 'age']
     });
-
 
     try {
       await schemaValidationsWithError1(schema);

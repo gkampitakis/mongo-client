@@ -2,7 +2,7 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { Document } from './Document';
 import mongodb, { MongoClient, ObjectID } from 'mongodb';
-import { Schema } from '../Schema/Schema';
+import { Schema } from '../Schema';
 
 jest.mock('../Utils/Utils');
 jest.mock('../MongoInstance/MongoInstance');
@@ -34,9 +34,7 @@ describe('Document', () => {
 	});
 
 	beforeEach(() => {
-		SchemaMock.SetupCollectionSpy.mockClear();
-		SchemaMock.SanitizeDataSpy.mockClear();
-		SchemaMock.IsValidSpy.mockClear();
+		SchemaMock.ValidateSpy.mockClear();
 		SchemaMock.PreHookSpy.mockClear();
 		SchemaMock.PostHookSpy.mockClear();
 		SchemaMock.ExecutePreHooksSpy.mockClear();
@@ -55,38 +53,49 @@ describe('Document', () => {
 	});
 
 	describe('Constructor', () => {
-		it('should call the stripObject/sanitizeData/isValid and return an object', () => {
+		it('should call the stripObject/validate and return an object', () => {
 			SchemaMock.schemaObject = { test: { type: 'string' } };
-			Document('document_test', {}, new Schema({ test: { type: 'string' } }));
+			Document(
+				'document_test',
+				{},
+				new Schema({
+					type: 'object',
+					properties: {
+						test: { type: 'string' }
+					}
+				})
+			);
 
-			expect(SchemaMock.IsValidSpy).toHaveBeenNthCalledWith(1, {});
-			expect(SchemaMock.SanitizeDataSpy).toHaveBeenNthCalledWith(1, {});
+			expect(SchemaMock.ValidateSpy).toHaveBeenNthCalledWith(1, {});
 			expect(StripObjectSpy).toHaveBeenCalledTimes(1);
 		});
 
-		it('Should not call the valid/sanitize data if schema has empty object model', () => {
+		it('Should not call the validate data if schema has empty object model', () => {
 			Document('document_test', new Schema());
 
-			expect(SchemaMock.IsValidSpy).not.toHaveBeenCalled();
-			expect(SchemaMock.SanitizeDataSpy).not.toHaveBeenCalled();
+			expect(SchemaMock.ValidateSpy).not.toHaveBeenCalled();
 			expect(StripObjectSpy).toHaveBeenCalledTimes(1);
 		});
 
-		it('Should not call the is valid/sanitize data if schema is not provided', () => {
+		it('Should not call the is validate data if schema is not provided', () => {
 			Document('document_test', {});
 
-			expect(SchemaMock.IsValidSpy).not.toHaveBeenCalled();
-			expect(SchemaMock.SanitizeDataSpy).not.toHaveBeenCalled();
+			expect(SchemaMock.ValidateSpy).not.toHaveBeenCalled();
 			expect(StripObjectSpy).toHaveBeenCalledTimes(1);
 		});
 	});
 
 	describe('Method get schema', () => {
 		it('Should return the schema object', () => {
-			SchemaMock.schemaObject = { test: { type: 'string' } };
-			const doc = Document('document_test', {}, new Schema({ test: { type: 'string' } }));
+			SchemaMock.schemaObject = {
+				type: 'object',
+				properties: {
+					test: { type: 'string' }
+				}
+			};
+			const doc = Document('document_test', {}, new Schema(SchemaMock.schemaObject));
 
-			expect(doc.schema).toEqual({ test: { type: 'string' } });
+			expect(doc.schema).toEqual(SchemaMock.schemaObject);
 		});
 
 		it('Should return undefined if no schemaDefinition', () => {
@@ -120,18 +129,29 @@ describe('Document', () => {
 	});
 
 	describe('Method save', () => {
-		it('Should call the get collection/save/isValid/sanitizeData', async () => {
+		it('Should call the get collection/save/validate', async () => {
 			SchemaMock.schemaObject = { testField: { type: 'object' } };
 			const data = {
 					testField: { name: 'test' }
 				},
-				doc = Document('document_test', data, new Schema({ testField: { type: 'object' } }));
+				doc = Document(
+					'document_test',
+					data,
+					new Schema({
+						type: 'object',
+						properties: {
+							testField: {
+								type: 'object',
+								properties: {}
+							}
+						}
+					})
+				);
 
 			const result = await doc.save();
 
 			expect(MongoInstanceMock.GetCollectionSpy).toBeCalledTimes(1);
-			expect(SchemaMock.IsValidSpy).toHaveBeenNthCalledWith(1, data);
-			expect(SchemaMock.SanitizeDataSpy).toHaveBeenNthCalledWith(1, data);
+			expect(SchemaMock.ValidateSpy).toHaveBeenNthCalledWith(1, data);
 			expect(MongoInstanceMock.UpdateOneSpy).toHaveBeenNthCalledWith(
 				1,
 				{ _id: doc.data._id },
@@ -141,7 +161,7 @@ describe('Document', () => {
 			expect(result).toEqual(doc);
 		});
 
-		it('Should not call the isValid/sanitizeData if not schema provided', async () => {
+		it('Should not call the validate if not schema provided', async () => {
 			const data = {
 					testField: { name: 'test' }
 				},
@@ -150,8 +170,7 @@ describe('Document', () => {
 			const result = await doc.save();
 
 			expect(MongoInstanceMock.GetCollectionSpy).toBeCalledTimes(1);
-			expect(SchemaMock.IsValidSpy).not.toHaveBeenCalled();
-			expect(SchemaMock.SanitizeDataSpy).not.toHaveBeenCalled();
+			expect(SchemaMock.ValidateSpy).not.toHaveBeenCalled();
 			expect(MongoInstanceMock.UpdateOneSpy).toHaveBeenNthCalledWith(
 				1,
 				{ _id: doc.data._id },
@@ -187,7 +206,7 @@ describe('Document', () => {
 
 		describe('When schema is not present', () => {
 			it('Should not call the execute pre/post hooks', async () => {
-				const doc = Document('document_test', {});
+				const doc = Document('document_test', { data: 'data' });
 
 				await doc.save();
 
@@ -199,7 +218,7 @@ describe('Document', () => {
 
 	describe('Method lean', () => {
 		it('Should return the data field', () => {
-			const doc = Document('document_test', { testField: { name: 'test' } }, new Schema({}));
+			const doc = Document('document_test', { testField: { name: 'test' } }, new Schema());
 
 			expect(doc.lean()).toEqual({ testField: { name: 'test' } });
 		});

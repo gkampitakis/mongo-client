@@ -1,92 +1,94 @@
 /* eslint-disable @typescript-eslint/class-name-casing */
 import { ObjectID } from 'mongodb';
-import { Schema, SchemaModel } from '../Schema/Schema';
+import { Schema, SchemaDefinition } from '../Schema';
 import { MongoInstance } from '../MongoInstance/MongoInstance';
-import { isEmptyObject, stripObject } from '../Utils/Utils';
-
-//TODO: we can call the collection from here as well but we don't prepare the collection through schema. So probably
-//either not export the document constructor or have the logic of preparing or already prepared to schema. Take care that there
-//is no reason to check the costly function collection exists everytime. Take advantage of the mapping and the caching that ajv uses. Use the unique naming as well 
+import { stripObject } from '../Utils';
 
 /** @internal */
 class _Document extends MongoInstance {
-  public data: any;
+	public data: any;
 
-  public constructor(collectionName: string, data: any, schema?: Schema) {
-    super(collectionName, schema);
+	public constructor(collectionName: string, data: any, schema?: Schema) {
+		super(collectionName, schema);
 
-    this.data = data;
+		this.data = data;
 
-    this.prepareData(data);
-  }
+		this.prepareData(data);
+	}
 
-  public remove = (): Promise<{}> => {
-    return new Promise(async (resolve, reject) => {
-      try {
-        await this._schema?.executePreHooks('delete', this);
+	public remove = (): Promise<{}> => {
+		return new Promise(async (resolve, reject) => {
+			try {
+				await this._schema?.executePreHooks('delete', this);
 
-        await this.collection.deleteOne({ _id: new ObjectID(this.data._id) });
+				await this.collection.deleteOne({ _id: new ObjectID(this.data._id) });
 
-        await this._schema?.executePreHooks('delete', this);
+				await this._schema?.executePreHooks('delete', this);
 
-        resolve(stripObject(this));
-      } catch (error) {
-        reject(error);
-      }
-    });
-  };
+				resolve(stripObject(this));
+			} catch (error) {
+				reject(error);
+			}
+		});
+	};
 
-  public save = async (): Promise<{}> => {
-    this.data._id = this.data._id || new ObjectID();
+	public save = async (): Promise<Document> => {
+		const id = this.data._id || new ObjectID();
 
-    return new Promise(async (resolve, reject) => {
-      try {
-        this.prepareData(this.data);
+		return new Promise(async (resolve, reject) => {
+			try {
+				this.prepareData(this.data, id);
 
-        await this._schema?.executePreHooks('save', this);
+				await this._schema?.executePreHooks('save', this);
 
-        await this.collection.updateOne(
-          {
-            _id: this.data._id
-          },
-          { $set: this.data },
-          { upsert: true }
-        );
+				await this.collection.updateOne(
+					{
+						_id: this.data._id
+					},
+					{ $set: this.data },
+					{ upsert: true }
+				);
 
-        await this._schema?.executePostHooks('save', this);
+				await this._schema?.executePostHooks('save', this);
 
-        resolve(stripObject(this));
-      } catch (error) {
-        reject(error);
-      }
-    });
-  };
+				resolve(stripObject(this));
+			} catch (error) {
+				reject(error);
+			}
+		});
+	};
 
-  public lean = () => {
-    return this.data;
-  };
+	public lean = () => {
+		return this.data;
+	};
 
-  get schema() {
-    return this._schema?.schemaDefinition;
-  }
+	get schema() {
+		return this._schema?.schemaDefinition;
+	}
 
-  private prepareData(data: any) {
-    if (!this._schema || isEmptyObject(this._schema.schemaDefinition)) return;
-    this.data = this._schema!.sanitizeData(data);
-    this._schema!.isValid(data);
-  }
+	private prepareData(data: any, id?: any) {
+		if (!this._schema) return;
+		this.data = this._schema!.validate(data);
+		if (id) this.data._id = id;
+	}
 }
 
 /** @internal */
 export function Document<Generic>(collectionName: string, data: Generic, schema?: Schema): Document<Generic> {
-  return stripObject(new _Document(collectionName, data, schema));
+	return stripObject(new _Document(collectionName, data, schema));
 }
 
 export type Document<data = any> = {
-  data: { _id?: string } & data;
-  lean: () => { _id?: string } & data;
-  save: () => void;
-  remove: () => Promise<any>;
-  schema: SchemaModel | undefined;
-  collectionName: string;
+	data: { _id?: string } & data;
+	lean: () => { _id?: string } & data;
+	save: () => void;
+	remove: () => Promise<any>;
+	schema: SchemaDefinition | undefined;
+	collectionName: string;
 };
+
+/**
+ *  ------------ BACKLOG ------------
+ *
+ *  
+ */

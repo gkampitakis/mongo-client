@@ -82,6 +82,48 @@ describe('Schema', () => {
 
 			expect(() => schema.validate({ test: 'test' })).not.toThrowError();
 		});
+
+		it('Should return the data', () => {
+			const schema = new Schema({
+				type: 'object',
+				properties: {
+					test: { type: 'string' }
+				}
+			});
+
+			const data = schema.validate({ test: 'data' });
+
+			expect(data).toEqual({ test: 'data' });
+		});
+
+		it('Should return the data sanitized', () => {
+			const schema = new Schema({
+				type: 'object',
+				properties: {
+					test: { type: 'string' }
+				},
+				additionalProperties: false
+			});
+
+			const data = schema.validate({ test: 'data', additional: false });
+
+			expect(data).toEqual({ test: 'data' });
+		});
+
+		it('Should use the default values', () => {
+			const schema = new Schema({
+				type: 'object',
+				properties: {
+					string: { type: 'string', default: 'test' },
+					number: { type: 'number', default: 10 },
+					boolean: { type: 'boolean', default: false }
+				}
+			});
+
+			const data = schema.validate({});
+
+			expect(data).toEqual({ string: 'test', number: 10, boolean: false });
+		});
 	});
 
 	describe('Method pre/post', () => {

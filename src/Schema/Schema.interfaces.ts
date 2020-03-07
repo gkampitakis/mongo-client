@@ -1,31 +1,26 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-export type SchemaDefinition =
-	| undefined
-	| ObjectSchema
-	| NumberSchema
-	| StringSchema
-	| ArraySchema
-	| BooleanSchema
-	| NullSchema;
+export type SchemaDefinition = ObjectSchema;
+
+type NestedSchema = undefined | ObjectSchema | NumberSchema | StringSchema | ArraySchema | BooleanSchema | NullSchema;
 
 interface ObjectSchema extends CommonKeys {
 	type: 'object';
 	maxProperties?: number;
 	minProperties?: number;
 	properties: {
-		[key: string]: SchemaDefinition;
+		[key: string]: NestedSchema;
 	};
 	required?: string[];
 	patternProperties?: {
-		[key: string]: SchemaDefinition;
+		[key: string]: NestedSchema;
 	};
 	default?: object;
 	additionalProperties?: boolean;
 	dependencies?: {
-		[key: string]: string[] | SchemaDefinition;
+		[key: string]: string[] | NestedSchema;
 	};
-	propertyNames?: SchemaDefinition;
+	propertyNames?: NestedSchema;
 }
 
 interface BooleanSchema {
@@ -69,14 +64,14 @@ interface ArraySchema extends CommonKeys {
 	uniqueItems?: boolean;
 	items?: object | object[];
 	additionalItems?: boolean | object;
-	contains?: SchemaDefinition;
+	contains?: NestedSchema;
 	default?: any[];
 }
 
 interface CommonKeys {
 	enum?: any[];
 	const?: any;
-	not?: SchemaDefinition;
+	not?: NestedSchema;
 }
 
 export interface ValidatorOptions {
