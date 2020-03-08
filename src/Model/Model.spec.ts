@@ -2,7 +2,7 @@ import { Model } from './Model';
 import { Schema } from '../Schema/Schema';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongodb, { MongoClient, ObjectID } from 'mongodb';
-import { Document } from "../Document/Document";
+import { Document } from '../Document/Document';
 
 jest.mock('../Document/Document');
 jest.mock('../Schema/Schema');
@@ -11,7 +11,9 @@ jest.mock('../MongoInstance/MongoInstance');
 
 describe('Model', () => {
 	const { DocumentSpy } = jest.requireMock('../Document/Document'),
-		{ ObjectIdSpy, IsEmptyObjectSpy, ExtractUniqueValuesSpy } = jest.requireMock('../Utils/Utils'),
+		{ ObjectIdSpy, IsEmptyObjectSpy, ExtractUniqueValuesSpy, ObjectEqualitySpy } = jest.requireMock(
+			'../Utils/Utils'
+		),
 		SchemaMock = jest.requireMock('../Schema/Schema').Schema,
 		MongoInstanceMock = jest.requireMock('../MongoInstance/MongoInstance').MongoInstance;
 
@@ -39,25 +41,26 @@ describe('Model', () => {
 		DocumentSpy.mockClear();
 		SchemaMock.ExecutePreHooksSpy.mockClear();
 		SchemaMock.ExecutePostHooksSpy.mockClear();
+		SchemaMock.ValidateSpy.mockClear();
 		MongoInstanceMock.GetCollectionSpy.mockClear();
 		MongoInstanceMock.GetCollectionNameSpy.mockClear();
 		ObjectIdSpy.mockClear();
 		IsEmptyObjectSpy.mockClear();
 		ExtractUniqueValuesSpy.mockClear();
+		ObjectEqualitySpy.mockClear();
 
 		MongoInstanceMock.throwError = false;
 
 		/**Mongo DB operations Spies */
 		MongoInstanceMock.InsertOneSpy.mockClear();
-		MongoInstanceMock.FindOneAndUpdateSpy.mockClear();
+		MongoInstanceMock.UpdateOneSpy.mockClear();
 		MongoInstanceMock.FindOneSpy.mockClear();
 
 		SchemaMock.schemaDefinition = {};
-
 	});
 
 	describe('Constructor', () => {
-		it('Should call the prepare collection if it\'s the 1st time', done => {
+		it("Should call the prepare collection if it's the 1st time", done => {
 			const schema = new Schema();
 
 			Model('test', schema);
@@ -71,19 +74,13 @@ describe('Model', () => {
 		it('Should not call again the prepare collection for same collection', done => {
 			const schema = new Schema();
 
-			SchemaMock.schemaDefinition = undefined;
+			Model('test', schema);
 
-			Model('cache', schema);
-			Model('cache', schema);
-
-			setTimeout(() => {
-				expect(ExtractUniqueValuesSpy).toHaveBeenCalledTimes(0);
-				done();
-			}, 1000);
+			expect(ExtractUniqueValuesSpy).toHaveBeenCalledTimes(0);
+			done();
 		});
 
 		it('Should not call the prepare collection if no schema is given', done => {
-
 			SchemaMock.schemaDefinition = undefined;
 
 			Model('noSchema', new Schema());
@@ -109,7 +106,6 @@ describe('Model', () => {
 
 	describe('Method create', () => {
 		it('Should call the document function', async () => {
-
 			SchemaMock.schemaDefinition = undefined;
 
 			const schema = new Schema(),
@@ -127,16 +123,14 @@ describe('Model', () => {
 		});
 
 		it('Should return a non wrapped object if option is lean', async () => {
-
 			const schema = new Schema(),
 				testModel = Model('wrappedTest', schema),
 				data = { test: 'Data' },
-				document = await testModel.create(data, { lean: true });
+				document = await testModel.create(data, true);
 
 			expect(document).not.toBeInstanceOf(Document);
 			expect(document).toEqual(data);
 			expect(DocumentSpy).not.toHaveBeenCalled();
-
 		});
 
 		it('Should call execute pre/post hooks if schema provided', async () => {
@@ -174,119 +168,139 @@ describe('Model', () => {
 		});
 	});
 
-	// describe('Method findByIdAndUpdate', () => {
-	// 	it('Should return null if not found', async () => {
-	// 		const schema = new Schema(),
-	// 			testModel = Model('test2', schema);
+	describe('Method findByIdAndUpdate', () => {
+		it('Should return null if not found', async () => {
+			const schema = new Schema(),
+				testModel = Model('test2', schema);
+			const result = await testModel.findByIdAndUpdate('5e4acf03d8e9435b2a2640ae', { test: 'test' });
 
-	// 		const result = await testModel.findByIdAndUpdate(
-	// 			'5e4acf03d8e9435b2a2640ae',
-	// 			{ test: 'test' },
-	// 			{ upsert: false }
-	// 		);
+			expect(MongoInstanceMock.FindOneSpy).toHaveBeenNthCalledWith(1, {
+				_id: new ObjectID('5e4acf03d8e9435b2a2640ae')
+			});
+			expect(MongoInstanceMock.GetCollectionSpy).toHaveBeenCalledTimes(2);
+			expect(result).toBeNull();
+		});
+		it('Should return the same document if no updates are made', async () => {
+			const schema = new Schema(),
+				testModel = Model('test2', schema);
 
-	// 		expect(SchemaMock.SanitizeDataSpy).toHaveBeenNthCalledWith(1, { test: 'test' });
-	// 		expect(IsEmptyObjectSpy).toHaveBeenNthCalledWith(1, { test: 'test' });
-	// 		expect(SchemaMock.IsValidSpy).toHaveBeenNthCalledWith(1, { test: 'test' }, true);
-	// 		expect(MongoInstanceMock.GetCollectionSpy).toHaveBeenCalledTimes(1);
-	// 		expect(result).toBeNull();
-	// 		expect(MongoInstanceMock.FindOneAndUpdateSpy).toHaveBeenNthCalledWith(
-	// 			1,
-	// 			{ _id: new ObjectID('5e4acf03d8e9435b2a2640ae') },
-	// 			{ $set: { test: 'test' } },
-	// 			{ upsert: false }
-	// 		);
-	// 	});
+			const doc = await testModel.create({ test: 'test' }, true);
 
-	// 	it('Should return null if empty object is provided', async () => {
-	// 		const schema = new Schema(),
-	// 			testModel = Model('test2', schema);
+			MongoInstanceMock.GetCollectionSpy.mockClear();
 
-	// 		const result = await testModel.findByIdAndUpdate('5e4acf03d8e9435b2a2640ae', {}, { upsert: false });
-	// 		expect(SchemaMock.SanitizeDataSpy).toHaveBeenNthCalledWith(1, {});
-	// 		expect(IsEmptyObjectSpy).toHaveBeenNthCalledWith(1, {});
-	// 		expect(SchemaMock.IsValidSpy).toHaveBeenCalledTimes(0);
-	// 		expect(MongoInstanceMock.GetCollectionSpy).toHaveBeenCalledTimes(0);
-	// 		expect(result).toBeNull();
-	// 		expect(MongoInstanceMock.FindOneAndUpdateSpy).toHaveBeenCalledTimes(0);
-	// 	});
+			const result = await testModel.findByIdAndUpdate(doc._id, {});
 
-	// 	it('Should return a wrapped object', async () => {
-	// 		const schema = new Schema(),
-	// 			testModel = Model('test2', schema),
-	// 			data = { test: 'test' },
-	// 			updatedData = { test: 'test2' };
+			expect(SchemaMock.ValidateSpy).toHaveBeenCalledTimes(1);
+			expect(ObjectEqualitySpy).toHaveBeenCalledTimes(1);
+			expect(MongoInstanceMock.GetCollectionSpy).toHaveBeenCalledTimes(1);
+			expect(result).toEqual({ _id: doc._id, test: 'test' });
+			expect(MongoInstanceMock.FindOneSpy).toHaveBeenCalledTimes(1);
+		});
+		it('Should return a wrapped object', async () => {
+			const schema = new Schema(),
+				testModel = Model('test2', schema),
+				data = { test: 'test' },
+				updatedData = { test: 'test2' };
+			const doc = await testModel.create(data, true);
 
-	// 		const result = await testModel.create(data);
+			MongoInstanceMock.GetCollectionSpy.mockClear();
+			const result = await testModel.findByIdAndUpdate(doc._id as string, updatedData);
 
-	// 		MongoInstanceMock.GetCollectionSpy.mockClear();
+			expect(result).toHaveProperty('collectionName');
+			expect(result.data).toEqual({
+				_id: doc._id,
+				...updatedData
+			});
+			expect(MongoInstanceMock.GetCollectionSpy).toHaveBeenCalledTimes(2);
+			expect(MongoInstanceMock.FindOneSpy).toHaveBeenNthCalledWith(1, { _id: new ObjectID(doc._id) });
+			expect(MongoInstanceMock.UpdateOneSpy).toHaveBeenNthCalledWith(
+				1,
+				{ _id: new ObjectID(doc._id) },
+				{ $set: { test: 'test2' } }
+			);
+		});
+		it('Should not call the validate and just pass raw data if no schema', async () => {
+			const testModel = Model('NoSchema'),
+				data = { test: 'test' },
+				updatedData = { test: { test: 'test' } };
+			const result = await testModel.create(data, true);
+			SchemaMock.ValidateSpy.mockClear();
+			await testModel.findByIdAndUpdate(result._id as string, updatedData);
+			expect(SchemaMock.ValidateSpy).toHaveBeenCalledTimes(0);
+			expect(ObjectEqualitySpy).toHaveBeenCalledTimes(1);
+			expect(MongoInstanceMock.FindOneSpy).toHaveBeenNthCalledWith(1, { _id: new ObjectID(result._id) });
+			expect(MongoInstanceMock.UpdateOneSpy).toHaveBeenNthCalledWith(
+				1,
+				{ _id: new ObjectID(result._id) },
+				{ $set: { test: { test: 'test' } } }
+			);
+		});
 
-	// 		await testModel.findByIdAndUpdate(result.data._id as string, updatedData);
+		describe('Pre/post hooks', () => {
+			it('Should execute them if schema provided with plain object', async () => {
+				const testModel = Model('Schema', new Schema()),
+					data = { test: 'test' },
+					updatedData = { test: { test: 'test' } };
 
-	// 		expect(result).toEqual({
-	// 			data: { _id: expect.any(String), ...data },
-	// 			collectionName: 'test2'
-	// 		});
-	// 		expect(MongoInstanceMock.GetCollectionSpy).toHaveBeenCalledTimes(1);
-	// 		expect(MongoInstanceMock.FindOneAndUpdateSpy).toHaveBeenNthCalledWith(
-	// 			1,
-	// 			{ _id: new ObjectID(result.data._id) },
-	// 			{ $set: { test: 'test2' } },
-	// 			undefined
-	// 		);
-	// 	});
+				const doc = await testModel.create(data, true);
 
-	// 	it('Should not call the sanitizeData/isValid and just pass raw data if no schema', async () => {
-	// 		const testModel = Model('NoSchema'),
-	// 			data = { test: 'test' },
-	// 			updatedData = { test: { test: 'test' } };
+				SchemaMock.ExecutePostHooksSpy.mockClear();
+				SchemaMock.ExecutePreHooksSpy.mockClear();
 
-	// 		const result = await testModel.create(data);
-	// 		await testModel.findByIdAndUpdate(result.data._id as string, updatedData);
+				await testModel.findByIdAndUpdate(doc._id as string, updatedData, true);
 
-	// 		expect(SchemaMock.IsValidSpy).toHaveBeenCalledTimes(0);
-	// 		expect(SchemaMock.SanitizeDataSpy).toHaveBeenCalledTimes(0);
-	// 		expect(IsEmptyObjectSpy).toHaveBeenNthCalledWith(1, updatedData);
-	// 		expect(MongoInstanceMock.FindOneAndUpdateSpy).toHaveBeenNthCalledWith(
-	// 			1,
-	// 			{ _id: new ObjectID(result.data._id) },
-	// 			{ $set: { test: { test: 'test' } } },
-	// 			undefined
-	// 		);
-	// 	});
+				expect(SchemaMock.ExecutePostHooksSpy).toHaveBeenNthCalledWith(1, 'update', {
+					_id: doc._id,
+					test: { test: 'test' }
+				});
+				expect(SchemaMock.ExecutePreHooksSpy).toHaveBeenNthCalledWith(1, 'update', {
+					_id: doc._id,
+					test: 'test'
+				});
+				expect(MongoInstanceMock.UpdateOneSpy).toHaveBeenCalled();
+			});
 
-	// 	it('Should call execute pre/post hooks if schema provided', async () => {
-	// 		const testModel = Model('Schema', new Schema()),
-	// 			data = { test: 'test' },
-	// 			updatedData = { test: { test: 'test' } };
+			it('Should execute them if schema provided with document', async () => {
+				const testModel = Model('Schema', new Schema()),
+					data = { test: 'test' },
+					updatedData = { test: { test: 'test' } };
 
-	// 		const result = await testModel.create(data);
-	// 		SchemaMock.ExecutePostHooksSpy.mockClear();
-	// 		SchemaMock.ExecutePreHooksSpy.mockClear();
+				const doc = await testModel.create(data, true);
 
-	// 		await testModel.findByIdAndUpdate(result.data._id as string, updatedData);
+				SchemaMock.ExecutePostHooksSpy.mockClear();
+				SchemaMock.ExecutePreHooksSpy.mockClear();
 
-	// 		expect(SchemaMock.ExecutePostHooksSpy).toHaveBeenCalledTimes(1);
-	// 		expect(SchemaMock.ExecutePreHooksSpy).toHaveBeenCalledTimes(1);
-	// 		expect(MongoInstanceMock.FindOneAndUpdateSpy).toHaveBeenCalled();
-	// 	});
+				await testModel.findByIdAndUpdate(doc._id as string, updatedData);
 
-	// 	it('Should not call execute pre/post hooks if schema not provided', async () => {
-	// 		const testModel = Model('NoSchema'),
-	// 			data = { test: 'test' },
-	// 			updatedData = { test: { test: 'test' } };
+				expect(SchemaMock.ExecutePostHooksSpy).toHaveBeenNthCalledWith(1, 'update', {
+					collectionName: 'Schema',
+					data: { _id: doc._id, test: { test: 'test' } }
+				});
+				expect(SchemaMock.ExecutePreHooksSpy).toHaveBeenNthCalledWith(1, 'update', {
+					collectionName: 'Schema',
+					data: { _id: doc._id, test: 'test' }
+				});
+				expect(MongoInstanceMock.UpdateOneSpy).toHaveBeenCalled();
+			});
 
-	// 		const result = await testModel.create(data);
-	// 		SchemaMock.ExecutePostHooksSpy.mockClear();
-	// 		SchemaMock.ExecutePreHooksSpy.mockClear();
+			it('Should not execute if schema not provided', async () => {
+				const testModel = Model('NoSchema'),
+					data = { test: 'test' },
+					updatedData = { test: { test: 'test' } };
 
-	// 		await testModel.findByIdAndUpdate(result.data._id as string, updatedData);
+				const doc = await testModel.create(data, true);
 
-	// 		expect(SchemaMock.ExecutePostHooksSpy).toHaveBeenCalledTimes(0);
-	// 		expect(SchemaMock.ExecutePreHooksSpy).toHaveBeenCalledTimes(0);
-	// 		expect(MongoInstanceMock.FindOneAndUpdateSpy).toHaveBeenCalled();
-	// 	});
-	// });
+				SchemaMock.ExecutePostHooksSpy.mockClear();
+				SchemaMock.ExecutePreHooksSpy.mockClear();
+
+				await testModel.findByIdAndUpdate(doc._id as string, updatedData);
+
+				expect(SchemaMock.ExecutePostHooksSpy).not.toHaveBeenCalled();
+				expect(SchemaMock.ExecutePreHooksSpy).not.toHaveBeenCalled();
+				expect(MongoInstanceMock.UpdateOneSpy).toHaveBeenCalled();
+			});
+		});
+	});
 
 	describe('Method findById ', () => {
 		it('Should call the objectId', async () => {
@@ -338,7 +352,6 @@ describe('Model', () => {
 		});
 
 		it('Should not return a wrapped document if option lean', async () => {
-
 			const schema = new Schema(),
 				testModel = Model('test6', schema),
 				data = { test: 'test' };
@@ -346,13 +359,11 @@ describe('Model', () => {
 			const result = await testModel.create(data);
 			DocumentSpy.mockClear();
 
-			const doc = await testModel.findOne({ _id: result.data._id }, { lean: true });
+			const doc = await testModel.findOne({ _id: result.data._id }, true);
 
 			expect(DocumentSpy).toHaveBeenCalledTimes(0);
 			expect(doc).toEqual({ ...data, _id: result.data._id });
 			expect(doc).not.toBeInstanceOf(Document);
-
 		});
-
 	});
 });

@@ -70,8 +70,9 @@ class _Document extends MongoInstance {
 		return this._schema?.schemaDefinition;
 	}
 
-	private prepareData(data: any, id?: any) {
+	private prepareData(data: any, _id?: any) {
 		if (!this._schema) return;
+		const id = this.data._id || _id;
 		this.data = this._schema!.validate(data);
 		if (id) this.data._id = id;
 	}

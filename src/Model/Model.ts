@@ -1,4 +1,4 @@
-import { extractUniqueValues, objectID } from '../Utils/Utils';
+import { extractUniqueValues, objectEquality, objectID } from '../Utils/Utils';
 import {
 	DeleteWriteOpResultObject,
 	FilterQuery,
@@ -8,7 +8,7 @@ import {
 import { Schema } from '../Schema/Schema';
 import { MongoInstance } from '../MongoInstance/MongoInstance';
 import { Document } from '../Document/Document';
-import { SchemaDefinition } from "../Schema/Schema.interfaces";
+import { SchemaDefinition } from '../Schema/Schema.interfaces';
 
 /** @internal */
 class InternalModel extends MongoInstance {
@@ -19,14 +19,14 @@ class InternalModel extends MongoInstance {
 		if (schema?.schemaDefinition) this.prepareCollection(collectionName, schema!.schemaDefinition);
 	}
 
-	public findOne(query: object, options: ModelOptions = { lean: false }): Promise<Document | object | null> {
+	public findOne(query: object, lean?: boolean): Promise<any> {
 		return new Promise(async (resolve, reject) => {
 			try {
 				const result = await this.collection.findOne(query);
 
 				if (!result) return resolve(null);
 
-				if (options.lean) return resolve(result);
+				if (lean) return resolve(result);
 
 				const wrappedDoc = Document(this.collectionName, result, this._schema);
 
@@ -37,48 +37,48 @@ class InternalModel extends MongoInstance {
 		});
 	}
 
-	public findById(id: string, options: ModelOptions = { lean: false }): Promise<Document | object | null> {
+	public findById(id: string, lean?: boolean): Promise<any> {
 		const _id = objectID(id);
 
-		return this.findOne({ _id }, options);
+		return this.findOne({ _id }, lean);
 	}
 
-	// public findByIdAndUpdate(id: string, update: object, options?: FindOneAndUpdateOption & QueryOptions) {
-	// 	const _id = objectID(id); //REFACTOR:
+	public findByIdAndUpdate(id: string, update: object, lean?: boolean): Promise<any> {
+		return new Promise(async (resolve, reject) => {
+			try {
+				const document = await this.findById(id, true);
 
-	// 	return new Promise(async (resolve, reject) => {
-	// 		try {
-	// 			const validData = this._schema?.sanitizeData(update) || update;
+				if (!document) return resolve(null);
 
-	// 			if (isEmptyObject(validData)) return resolve(null);
+				const updatedData = { ...document, ...update };
 
-	// 			this._schema?.isValid(update, true);
-	// 			//TODO: check if here the update object is correct
-	// 			await this._schema?.executePreHooks('update', Document(this.collectionName, update, this._schema));
+				this._schema?.validate(updatedData);
 
-	// 			const result = await this.collection.findOneAndUpdate({ _id }, { $set: validData }, options);
+				if (objectEquality(document, updatedData)) return resolve(document);
 
-	// 			if (!result.value) {
-	// 				await this._schema?.executePostHooks('update', {});
+				await this._schema?.executePreHooks(
+					'update',
+					lean ? document : Document(this.collectionName, document, this._schema)
+				);
 
-	// 				return resolve(null);
-	// 			}
+				//FIXME:Here needs testing if we change the pre hook data will affect the update data as well ??
 
-	// 			const wrappedDoc = Document(this.collectionName, result.value, this._schema);
+				await this.collection.updateOne({ _id: id }, { $set: update });
 
-	// 			await this._schema?.executePostHooks('update', wrappedDoc);
+				const wrappedDoc = lean ? updatedData : Document(this.collectionName, updatedData, this._schema);
 
-	// 			resolve(wrappedDoc);
-	// 		} catch (error) {
-	// 			reject(error);
-	// 		}
-	// 	});
-	// }
+				await this._schema?.executePostHooks('update', wrappedDoc);
+
+				resolve(wrappedDoc);
+			} catch (error) {
+				reject(error);
+			}
+		});
+	}
 
 	public deleteMany(filter: FilterQuery<object>) {
 		return new Promise(async (resolve, reject) => {
 			try {
-
 				await this.collection.deleteMany(filter);
 
 				resolve();
@@ -96,26 +96,21 @@ class InternalModel extends MongoInstance {
 		return Document<Generic & ExtendableObject>(this.collectionName, data, this._schema);
 	}
 
-	public create<Generic>(data: Generic, options: ModelOptions = { lean: false }): Promise<Document<Generic> | object> {
+	public create<Generic>(data: Generic, lean = false): Promise<any> {
 		return new Promise(async (resolve, reject) => {
 			try {
-
 				let wrappedDoc: any;
 
-				if (options.lean) {
-
+				if (lean) {
 					wrappedDoc = data;
 					wrappedDoc._id = objectID();
-
 				} else {
-
 					wrappedDoc = Document(this.collectionName, data, this._schema);
-
 				}
 
 				await this._schema?.executePreHooks('create', wrappedDoc);
 
-				await this.collection.insertOne(options.lean ? wrappedDoc : wrappedDoc.data);
+				await this.collection.insertOne(lean ? wrappedDoc : wrappedDoc.data);
 
 				await this._schema?.executePostHooks('create', wrappedDoc);
 
@@ -134,11 +129,8 @@ class InternalModel extends MongoInstance {
 		const values = extractUniqueValues(schemaDefinition);
 
 		for (const value of values) {
-
-			this.collection.createIndex(value, { unique: true });
-
+			this.collection.createIndex(value, { unique: true, sparse: true });
 		}
-
 	}
 
 	private async collectionExists(collectionName: string) {
@@ -162,16 +154,16 @@ export type Model = {
 	instance<Generic extends ExtendableObject>(data: Generic & ExtendableObject): Document<Generic & ExtendableObject>;
 	create<Generic extends ExtendableObject>(
 		data: Generic & ExtendableObject,
-		options?: ModelOptions
-	): Promise<Document<Generic & ExtendableObject | object>>;
+		lean?: false
+	): Promise<Document<Generic & ExtendableObject>>;
+	create<Generic extends ExtendableObject>(data: Generic & ExtendableObject, lean?: true): Promise<ExtendableObject>;
 	deleteMany(filter: FilterQuery<object>): Promise<DeleteWriteOpResultObject>;
-	// findByIdAndUpdate(
-	// 	id: string,
-	// 	update: object,
-	// 	options?: FindOneAndUpdateOption
-	// ): Promise<FindAndModifyWriteOpResultObject<object>>;
-	findById(id: string, options?: ModelOptions): Promise<Document | null | object>;
-	findOne(query: object, options?: ModelOptions): Promise<Document | null | object>;
+	findByIdAndUpdate(id: string, update: object, lean?: false): Promise<Document>;
+	findByIdAndUpdate(id: string, update: object, lean?: true): Promise<ExtendableObject>;
+	findById(id: string, lean?: false): Promise<Document>;
+	findById(id: string, lean?: true): Promise<ExtendableObject>;
+	findOne(query: object, lean?: false): Promise<Document>;
+	findOne(query: object, lean?: true): Promise<ExtendableObject>;
 	// deleteOne(filter:object,options?:DeleteOptions);
 };
 
