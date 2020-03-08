@@ -88,9 +88,9 @@ class InternalModel extends MongoInstance {
 		});
 	}
 
-	// public deleteOne(filter: object, options: DeleteOptions) {//TODO: implement
-
-	// }
+	public deleteOne(filter: object): Promise<DeleteWriteOpResultObject> {
+		return this.collection.deleteOne(filter);
+	}
 
 	public instance<Generic extends ExtendableObject>(data: Generic): Document<Generic & ExtendableObject> {
 		return Document<Generic & ExtendableObject>(this.collectionName, data, this._schema);
@@ -164,23 +164,14 @@ export type Model = {
 	findById(id: string, lean?: true): Promise<ExtendableObject>;
 	findOne(query: object, lean?: false): Promise<Document>;
 	findOne(query: object, lean?: true): Promise<ExtendableObject>;
-	// deleteOne(filter:object,options?:DeleteOptions);
+	deleteOne(filter: object): Promise<DeleteWriteOpResultObject>;
 };
 
 interface ExtendableObject {
 	[key: string]: any;
 }
 
-interface ModelOptions {
-	lean: boolean;
-}
-
-interface DeleteOptions extends ModelOptions {
-	resolve: boolean;
-}
-
 /**
  *  ------------ BACKLOG ------------
  *  //TODO: find the way that you write comments and they are shown above in the editor
- *  //TODO: populate at documents
  */

@@ -55,6 +55,7 @@ describe('Model', () => {
 		MongoInstanceMock.InsertOneSpy.mockClear();
 		MongoInstanceMock.UpdateOneSpy.mockClear();
 		MongoInstanceMock.FindOneSpy.mockClear();
+		MongoInstanceMock.DeleteOneSpy.mockClear();
 
 		SchemaMock.schemaDefinition = {};
 	});
@@ -364,6 +365,17 @@ describe('Model', () => {
 			expect(DocumentSpy).toHaveBeenCalledTimes(0);
 			expect(doc).toEqual({ ...data, _id: result.data._id });
 			expect(doc).not.toBeInstanceOf(Document);
+		});
+	});
+
+	describe('Method deleteOne', () => {
+		it('Should call the mongodb deleteOne function', async () => {
+			const schema = new Schema(),
+				testModel = Model('test6', schema);
+
+			await testModel.deleteOne({});
+
+			expect(MongoInstanceMock.DeleteOneSpy).toHaveBeenNthCalledWith(1, {});
 		});
 	});
 });
