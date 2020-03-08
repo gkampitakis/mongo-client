@@ -2,22 +2,23 @@ import { Document } from '../Document/Document';
 import { SchemaDefinition } from '../Schema';
 import { ObjectID } from 'mongodb';
 import flat from 'flat';
+import equal from 'fast-deep-equal';
 
 /** @internal */
-export function isEmptyObject(object?: {}): boolean {
+function isEmptyObject(object?: {}): boolean {
 	if (!object) return true;
 	return Object.keys(object).length === 0;
 }
 
 /** @internal */
-export function objectID(id?: string): ObjectID { //TEST:
+function objectID(id?: string): ObjectID {
 	if (id && !ObjectID.isValid(id)) throw new Error('Invalid id provided');
 
 	return new ObjectID(id);
 }
 
 /** @internal */
-export function stripObject(document: Document): Document {
+function stripObject(document: Document): Document {
 	return {
 		data: document.data,
 		lean: document.lean,
@@ -29,7 +30,7 @@ export function stripObject(document: Document): Document {
 }
 
 /** @internal */
-export function extractUniqueValues(schema: SchemaDefinition): string[] {
+function extractUniqueValues(schema: SchemaDefinition): string[] {
 	const result: object = flat(schema),
 		uniqueValues: string[] = [];
 
@@ -43,3 +44,10 @@ export function extractUniqueValues(schema: SchemaDefinition): string[] {
 
 	return uniqueValues;
 }
+
+/** @internal */
+function objectEquality(target: object, source: object): boolean {
+	return equal(target, source);
+}
+
+export { objectEquality, extractUniqueValues, stripObject, objectID, isEmptyObject };

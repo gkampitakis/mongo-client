@@ -1,9 +1,11 @@
 import { ObjectID } from 'mongodb';
+import equal from 'fast-deep-equal';
 
 const ObjectIdSpy = jest.fn(),
 	IsEmptyObjectSpy = jest.fn(),
 	StripObjectSpy = jest.fn(),
-	ExtractUniqueValuesSpy = jest.fn();
+	ExtractUniqueValuesSpy = jest.fn(),
+	ObjectEqualitySpy = jest.fn();
 
 function objectID(id?: string) {
 	ObjectIdSpy(...arguments);
@@ -27,6 +29,11 @@ function extractUniqueValues(data: any) {
 	return ['mockIndex'];
 }
 
+function objectEquality(source: any, target: any): boolean {
+	ObjectEqualitySpy(...arguments);
+    return equal(target, source);
+}
+
 export {
 	objectID,
 	ObjectIdSpy,
@@ -35,5 +42,7 @@ export {
 	stripObject,
 	StripObjectSpy,
 	extractUniqueValues,
-	ExtractUniqueValuesSpy
+	ExtractUniqueValuesSpy,
+	objectEquality,
+	ObjectEqualitySpy
 };

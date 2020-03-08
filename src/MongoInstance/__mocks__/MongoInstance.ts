@@ -36,7 +36,7 @@ export abstract class MongoInstance {
 
 		return {
 			updateOne: (query: any, data: any, options: any) => {
-				MongoInstance.UpdateOneSpy(query, data, options);
+				MongoInstance.UpdateOneSpy(...arguments);
 				return MongoInstance.database.collection(this._collectionName).updateOne(query, data, options);
 			},
 			findOneAndUpdate: (query: any, data: any, options: any) => {

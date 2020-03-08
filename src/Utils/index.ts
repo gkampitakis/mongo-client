@@ -1,1 +1,1 @@
-export { isEmptyObject, objectID, stripObject, extractUniqueValues } from './Utils';
+export { isEmptyObject, objectID, stripObject, extractUniqueValues, objectEquality } from './Utils';

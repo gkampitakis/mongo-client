@@ -1,4 +1,4 @@
-import { extractUniqueValues, isEmptyObject, objectID, stripObject } from './';
+import { extractUniqueValues, isEmptyObject, objectEquality, objectID, stripObject } from './';
 import { ObjectID } from 'mongodb';
 import { Document } from '../Document/Document';
 import { Schema } from '../Schema/Schema';
@@ -39,7 +39,6 @@ describe('Utils', () => {
 		});
 
 		it('Should return a new objectId if not parameter provider', () => {
-
 			expect(objectID()).toBeInstanceOf(ObjectID);
 		});
 	});
@@ -85,6 +84,66 @@ describe('Utils', () => {
 			};
 
 			expect(extractUniqueValues((object as never) as SchemaDefinition)).toEqual([]);
+		});
+	});
+
+	describe('Function objectEquality', () => {
+		it('Should return equal', () => {
+			const object1 = {
+					nest: {
+						nestedObject: {
+							moreNested: {
+								field1: '1',
+								field2: '2',
+								field3: '3'
+							}
+						},
+						moreFields: 'test'
+					}
+				},
+				object2 = {
+					nest: {
+						nestedObject: {
+							moreNested: {
+								field1: '1',
+								field2: '2',
+								field3: '3'
+							}
+						},
+						moreFields: 'test'
+					}
+				};
+
+			expect(objectEquality(object1, object2)).toBe(true);
+		});
+
+		it('Should return not equal', () => {
+			const object1 = {
+					nest: {
+						nestedObject: {
+							moreNested: {
+								field1: '1',
+								field2: '2',
+								field3: '3'
+							}
+						},
+						moreFields: 'test'
+					}
+				},
+				object2 = {
+					nest: {
+						nestedObject: {
+							moreNested: {
+								field1: '14',
+								field2: '2',
+								field3: '3'
+							}
+						},
+						moreFields: 'test'
+					}
+				};
+
+			expect(objectEquality(object1, object2)).toBe(false);
 		});
 	});
 });
