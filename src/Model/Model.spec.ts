@@ -133,7 +133,7 @@ describe('Model', () => {
 			expect(document).toEqual(data);
 			expect(DocumentSpy).not.toHaveBeenCalled();
 		});
-
+		//TEST: here write tests about pre/post save hook with lean option
 		it('Should call execute pre/post hooks if schema provided', async () => {
 			const testModel = Model('CreateModel', new Schema()),
 				data = { test: 'test' };
@@ -250,14 +250,24 @@ describe('Model', () => {
 
 				await testModel.findByIdAndUpdate(doc._id as string, updatedData, true);
 
-				expect(SchemaMock.ExecutePostHooksSpy).toHaveBeenNthCalledWith(1, 'update', {
-					_id: doc._id,
-					test: { test: 'test' }
-				});
-				expect(SchemaMock.ExecutePreHooksSpy).toHaveBeenNthCalledWith(1, 'update', {
-					_id: doc._id,
-					test: 'test'
-				});
+				expect(SchemaMock.ExecutePostHooksSpy).toHaveBeenNthCalledWith(
+					1,
+					'update',
+					{
+						_id: doc._id,
+						test: { test: 'test' }
+					},
+					true
+				);
+				expect(SchemaMock.ExecutePreHooksSpy).toHaveBeenNthCalledWith(
+					1,
+					'update',
+					{
+						_id: doc._id,
+						test: 'test'
+					},
+					true
+				);
 				expect(MongoInstanceMock.UpdateOneSpy).toHaveBeenCalled();
 			});
 
@@ -273,14 +283,24 @@ describe('Model', () => {
 
 				await testModel.findByIdAndUpdate(doc._id as string, updatedData);
 
-				expect(SchemaMock.ExecutePostHooksSpy).toHaveBeenNthCalledWith(1, 'update', {
-					collectionName: 'Schema',
-					data: { _id: doc._id, test: { test: 'test' } }
-				});
-				expect(SchemaMock.ExecutePreHooksSpy).toHaveBeenNthCalledWith(1, 'update', {
-					collectionName: 'Schema',
-					data: { _id: doc._id, test: 'test' }
-				});
+				expect(SchemaMock.ExecutePostHooksSpy).toHaveBeenNthCalledWith(
+					1,
+					'update',
+					{
+						collectionName: 'Schema',
+						data: { _id: doc._id, test: { test: 'test' } }
+					},
+					false
+				);
+				expect(SchemaMock.ExecutePreHooksSpy).toHaveBeenNthCalledWith(
+					1,
+					'update',
+					{
+						collectionName: 'Schema',
+						data: { _id: doc._id, test: 'test' }
+					},
+					false
+				);
 				expect(MongoInstanceMock.UpdateOneSpy).toHaveBeenCalled();
 			});
 

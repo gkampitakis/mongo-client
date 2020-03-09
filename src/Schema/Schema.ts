@@ -35,29 +35,29 @@ export class Schema {
 	}
 
 	/** @internal */
-	public executePreHooks(hook: HooksType, context: any): Promise<void> {
+	public executePreHooks(hook: HooksType, context: any, lean: boolean): Promise<void> {
 		return new Promise(resolve => {
 			if (this.hooks._pres.size <= 0) return resolve();
-
-			this.hooks.execPre(hook, stripObject(context), [context], () => {
+			//TEST:
+			this.hooks.execPre(hook, lean ? context : stripObject(context), [context], () => {
 				resolve();
 			});
 		});
 	}
 
 	/** @internal */
-	public executePostHooks(hook: HooksType, context: any): Promise<void> {
+	public executePostHooks(hook: HooksType, context: any, lean: boolean): Promise<void> {
 		return new Promise(resolve => {
 			if (this.hooks._posts.size <= 0) return resolve();
-
-			this.hooks.execPost(hook, stripObject(context), [context], () => {
+			//TEST:
+			this.hooks.execPost(hook, lean ? context : stripObject(context), [context], () => {
 				resolve();
 			});
 		});
 	}
 
 	public validate(data: any): object | void {
-		if (!this._schema) return;
+		if (!this._schema) return data;
 		//@ts-ignore
 		if (!this.validator(data)) {
 			//@ts-ignore

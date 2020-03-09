@@ -37,11 +37,9 @@ class _Document extends MongoInstance {
 	// }
 
 	public save = async (): Promise<Document> => {
-		const id = this.data._id || new ObjectID();
-
 		return new Promise(async (resolve, reject) => {
 			try {
-				this.prepareData(this.data, id);
+				this.prepareData(this.data);
 
 				await this._schema?.executePreHooks('save', this);
 
@@ -70,10 +68,10 @@ class _Document extends MongoInstance {
 		return this._schema?.schemaDefinition;
 	}
 
-	private prepareData(data: any, _id?: any) {
+	private prepareData(data: any) {
 		if (!this._schema) return;
-		const id = this.data._id || _id;
-		this.data = this._schema!.validate(data);
+		const id = this.data._id || new ObjectID();
+        this.data = this._schema!.validate(data);
 		if (id) this.data._id = id;
 	}
 }

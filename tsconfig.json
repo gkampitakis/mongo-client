@@ -59,10 +59,5 @@
 		"forceConsistentCasingInFileNames": true /* Disallow inconsistently-cased references to the same file. */,
 		"downlevelIteration": true
 	},
-	"exclude": [
-		"./benchmarks",
-		"./playground.ts",
-		"**/__mocks__/*",
-		"**/*.spec.ts"
-	]
+	"exclude": ["./benchmarks", "./playground.ts", "**/__mocks__/*", "**/*.spec.ts", "./playground"]
 }

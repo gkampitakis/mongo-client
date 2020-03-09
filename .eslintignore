@@ -4,3 +4,4 @@ lib/**/*
 playground.ts
 **/__mocks__/*
 benchmarks
+playground

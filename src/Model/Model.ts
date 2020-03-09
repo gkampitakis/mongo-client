@@ -1,10 +1,5 @@
 import { extractUniqueValues, objectEquality, objectID } from '../Utils/Utils';
-import {
-	DeleteWriteOpResultObject,
-	FilterQuery,
-	FindAndModifyWriteOpResultObject,
-	FindOneAndUpdateOption
-} from 'mongodb';
+import { DeleteWriteOpResultObject, FilterQuery } from 'mongodb';
 import { Schema } from '../Schema/Schema';
 import { MongoInstance } from '../MongoInstance/MongoInstance';
 import { Document } from '../Document/Document';
@@ -43,7 +38,7 @@ class InternalModel extends MongoInstance {
 		return this.findOne({ _id }, lean);
 	}
 
-	public findByIdAndUpdate(id: string, update: object, lean?: boolean): Promise<any> {
+	public findByIdAndUpdate(id: string, update: object, lean = false): Promise<any> {
 		return new Promise(async (resolve, reject) => {
 			try {
 				const document = await this.findById(id, true);
@@ -58,7 +53,8 @@ class InternalModel extends MongoInstance {
 
 				await this._schema?.executePreHooks(
 					'update',
-					lean ? document : Document(this.collectionName, document, this._schema)
+					lean ? document : Document(this.collectionName, document, this._schema),
+					lean
 				);
 
 				//FIXME:Here needs testing if we change the pre hook data will affect the update data as well ??
@@ -67,7 +63,7 @@ class InternalModel extends MongoInstance {
 
 				const wrappedDoc = lean ? updatedData : Document(this.collectionName, updatedData, this._schema);
 
-				await this._schema?.executePostHooks('update', wrappedDoc);
+				await this._schema?.executePostHooks('update', wrappedDoc, lean);
 
 				resolve(wrappedDoc);
 			} catch (error) {
@@ -108,11 +104,11 @@ class InternalModel extends MongoInstance {
 					wrappedDoc = Document(this.collectionName, data, this._schema);
 				}
 
-				await this._schema?.executePreHooks('create', wrappedDoc);
+				await this._schema?.executePreHooks('create', wrappedDoc, lean);
 
 				await this.collection.insertOne(lean ? wrappedDoc : wrappedDoc.data);
 
-				await this._schema?.executePostHooks('create', wrappedDoc);
+				await this._schema?.executePostHooks('create', wrappedDoc, lean);
 
 				resolve(wrappedDoc);
 			} catch (error) {
@@ -174,4 +170,5 @@ interface ExtendableObject {
 /**
  *  ------------ BACKLOG ------------
  *  //TODO: find the way that you write comments and they are shown above in the editor
+ * //BUG: doesn't make sense the caching should be removed
  */

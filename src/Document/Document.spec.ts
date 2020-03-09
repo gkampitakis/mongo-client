@@ -66,7 +66,7 @@ describe('Document', () => {
 				})
 			);
 
-			expect(SchemaMock.ValidateSpy).toHaveBeenNthCalledWith(1, {});
+			expect(SchemaMock.ValidateSpy).toHaveBeenCalledTimes(1);
 			expect(StripObjectSpy).toHaveBeenCalledTimes(1);
 		});
 
@@ -132,8 +132,8 @@ describe('Document', () => {
 		it('Should call the get collection/save/validate', async () => {
 			SchemaMock.schemaDefinition = { testField: { type: 'object' } };
 			const data = {
-				testField: { name: 'test' }
-			},
+					testField: { name: 'test' }
+				},
 				doc = Document(
 					'document_test',
 					data,
@@ -163,8 +163,8 @@ describe('Document', () => {
 
 		it('Should not call the validate if not schema provided', async () => {
 			const data = {
-				testField: { name: 'test' }
-			},
+					testField: { name: 'test' }
+				},
 				doc = Document('document_test', data);
 
 			const result = await doc.save();
@@ -186,11 +186,11 @@ describe('Document', () => {
 					callbackHookSpy = jest.fn(),
 					doc = Document('document_test', {}, schema);
 
-				schema.pre('save', function () {
+				schema.pre('save', function() {
 					callbackHookSpy();
 				});
 
-				schema.post('save', function () {
+				schema.post('save', function() {
 					callbackHookSpy();
 				});
 
@@ -220,7 +220,10 @@ describe('Document', () => {
 		it('Should return the data field', () => {
 			const doc = Document('document_test', { testField: { name: 'test' } }, new Schema());
 
-			expect(doc.lean()).toEqual({ testField: { name: 'test' } });
+			const result = doc.lean();
+
+			expect(result._id).toBeInstanceOf(ObjectID);
+			expect(result.testField).toEqual({ name: 'test' });
 		});
 	});
 });
