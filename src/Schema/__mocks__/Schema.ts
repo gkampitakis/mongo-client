@@ -22,12 +22,16 @@ export class Schema {
 		callback();
 	}
 
-	executePreHooks(hookType: any, callback: any) {
-		Schema.ExecutePreHooksSpy(...arguments);
+	executePreHooks(hookType: any, context: any, lean: any) {
+		const deepRef = {};
+
+		Object.assign(deepRef, context);
+
+		Schema.ExecutePreHooksSpy(hookType, deepRef, lean);
 	}
 
-	executePostHooks(hookType: any, callback: any) {
-		Schema.ExecutePostHooksSpy(...arguments);
+	executePostHooks(hookType: any, context: any, lean: any) {
+		Schema.ExecutePostHooksSpy(hookType, context, lean);
 	}
 
 	public validate(data: any) {

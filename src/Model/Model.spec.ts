@@ -250,15 +250,6 @@ describe('Model', () => {
 
 				await testModel.findByIdAndUpdate(doc._id as string, updatedData, true);
 
-				expect(SchemaMock.ExecutePostHooksSpy).toHaveBeenNthCalledWith(
-					1,
-					'update',
-					{
-						_id: doc._id,
-						test: { test: 'test' }
-					},
-					true
-				);
 				expect(SchemaMock.ExecutePreHooksSpy).toHaveBeenNthCalledWith(
 					1,
 					'update',
@@ -268,7 +259,20 @@ describe('Model', () => {
 					},
 					true
 				);
-				expect(MongoInstanceMock.UpdateOneSpy).toHaveBeenCalled();
+				expect(SchemaMock.ExecutePostHooksSpy).toHaveBeenNthCalledWith(
+					1,
+					'update',
+					{
+						_id: doc._id,
+						test: { test: 'test' }
+					},
+					true
+				);
+				expect(MongoInstanceMock.UpdateOneSpy).toHaveBeenNthCalledWith(
+					1,
+					{ _id: doc._id },
+					{ $set: updatedData }
+				);
 			});
 
 			it('Should execute them if schema provided with document', async () => {
@@ -283,15 +287,6 @@ describe('Model', () => {
 
 				await testModel.findByIdAndUpdate(doc._id as string, updatedData);
 
-				expect(SchemaMock.ExecutePostHooksSpy).toHaveBeenNthCalledWith(
-					1,
-					'update',
-					{
-						collectionName: 'Schema',
-						data: { _id: doc._id, test: { test: 'test' } }
-					},
-					false
-				);
 				expect(SchemaMock.ExecutePreHooksSpy).toHaveBeenNthCalledWith(
 					1,
 					'update',
@@ -301,7 +296,20 @@ describe('Model', () => {
 					},
 					false
 				);
-				expect(MongoInstanceMock.UpdateOneSpy).toHaveBeenCalled();
+				expect(SchemaMock.ExecutePostHooksSpy).toHaveBeenNthCalledWith(
+					1,
+					'update',
+					{
+						collectionName: 'Schema',
+						data: { _id: doc._id, test: { test: 'test' } }
+					},
+					false
+				);
+				expect(MongoInstanceMock.UpdateOneSpy).toHaveBeenNthCalledWith(
+					1,
+					{ _id: doc._id },
+					{ $set: updatedData }
+				);
 			});
 
 			it('Should not execute if schema not provided', async () => {

@@ -51,17 +51,17 @@ class InternalModel extends MongoInstance {
 
 				if (objectEquality(document, updatedData)) return resolve(document);
 
-				await this._schema?.executePreHooks(
-					'update',
-					lean ? document : Document(this.collectionName, document, this._schema),
-					lean
-				);
+				let wrappedDoc = lean ? document : Document(this.collectionName, document, this._schema);
 
-				//FIXME:Here needs testing if we change the pre hook data will affect the update data as well ??
+				await this._schema?.executePreHooks('update', wrappedDoc, lean);
 
 				await this.collection.updateOne({ _id: id }, { $set: update });
 
-				const wrappedDoc = lean ? updatedData : Document(this.collectionName, updatedData, this._schema);
+				if (lean) {
+					wrappedDoc = { ...wrappedDoc, ...update };
+				} else {
+					wrappedDoc.data = { ...wrappedDoc.data, ...update };
+				}
 
 				await this._schema?.executePostHooks('update', wrappedDoc, lean);
 
