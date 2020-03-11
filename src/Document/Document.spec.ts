@@ -199,8 +199,8 @@ describe('Document', () => {
 				expect(SchemaMock.PreHookSpy).toHaveBeenNthCalledWith(1, 'save', expect.any(Function));
 				expect(SchemaMock.PostHookSpy).toHaveBeenNthCalledWith(1, 'save', expect.any(Function));
 				expect(callbackHookSpy).toHaveBeenCalledTimes(2);
-				expect(SchemaMock.ExecutePostHooksSpy).toHaveBeenNthCalledWith(1, 'save', expect.any(Object));
-				expect(SchemaMock.ExecutePreHooksSpy).toHaveBeenNthCalledWith(1, 'save', expect.any(Object));
+				expect(SchemaMock.ExecutePostHooksSpy).toHaveBeenNthCalledWith(1, 'save', expect.any(Object), false);
+				expect(SchemaMock.ExecutePreHooksSpy).toHaveBeenNthCalledWith(1, 'save', expect.any(Object), false);
 			});
 		});
 

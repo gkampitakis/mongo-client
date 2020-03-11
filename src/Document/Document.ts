@@ -19,11 +19,13 @@ class _Document extends MongoInstance {
 	public remove = (): Promise<{}> => {
 		return new Promise(async (resolve, reject) => {
 			try {
-				await this._schema?.executePreHooks('delete', this);
+				await this._schema?.executePreHooks('delete', this, false);
+				//BUG: here probably we need to do the same implementation as model and 
+				//call it with false lean anb probably wrap it to stripObject
 
 				await this.collection.deleteOne({ _id: new ObjectID(this.data._id) });
 
-				await this._schema?.executePreHooks('delete', this);
+				await this._schema?.executePreHooks('delete', this, false);//BUG:
 
 				resolve(stripObject(this));
 			} catch (error) {
@@ -41,7 +43,7 @@ class _Document extends MongoInstance {
 			try {
 				this.prepareData(this.data);
 
-				await this._schema?.executePreHooks('save', this);
+				await this._schema?.executePreHooks('save', this, false);//BUG:
 
 				await this.collection.updateOne(
 					{
@@ -51,7 +53,7 @@ class _Document extends MongoInstance {
 					{ upsert: true }
 				);
 
-				await this._schema?.executePostHooks('save', this);
+				await this._schema?.executePostHooks('save', this, false);//BUG:
 
 				resolve(stripObject(this));
 			} catch (error) {
@@ -71,7 +73,7 @@ class _Document extends MongoInstance {
 	private prepareData(data: any) {
 		if (!this._schema) return;
 		const id = this.data._id || new ObjectID();
-        this.data = this._schema!.validate(data);
+		this.data = this._schema!.validate(data);
 		if (id) this.data._id = id;
 	}
 }
@@ -82,8 +84,8 @@ export function Document<Generic>(collectionName: string, data: Generic, schema?
 }
 
 export type Document<data = any> = {
-	data: { _id?: string } & data;
-	lean: () => { _id?: string } & data;
+	data: { _id: string } & data;
+	lean: () => { _id: string } & data;
 	save: () => void;
 	remove: () => Promise<any>;
 	schema: SchemaDefinition | undefined;
