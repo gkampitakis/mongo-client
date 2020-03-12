@@ -1,16 +1,19 @@
 import { Schema } from './';
 
 jest.mock('kareem');
+jest.mock('../Utils/Utils');
 
 describe('Schema', () => {
 	let schema: Schema;
-	const KareemMock = jest.requireMock('kareem').Kareem;
+	const KareemMock = jest.requireMock('kareem').Kareem,
+		{ StripObjectSpy } = jest.requireMock('../Utils/Utils');
 
 	beforeEach(() => {
 		KareemMock.PostSpy.mockClear();
 		KareemMock.ExecutePostSpy.mockClear();
 		KareemMock.PreSpy.mockClear();
 		KareemMock.ExecutePreSpy.mockClear();
+		StripObjectSpy.mockClear();
 	});
 
 	describe('Method validate', () => {
@@ -139,17 +142,34 @@ describe('Schema', () => {
 	});
 
 	describe('Method execute pre/post hooks', () => {
-		it('Should call the execute pre/post hooks function if hooks registered', async () => {
-			const schema = new Schema();
+		describe('When the execute pre/post hooks function called', () => {
+			it('Should call the stripObject if lean is false', async () => {
+				const schema = new Schema();
 
-			KareemMock._pres.set('test', () => 'test');
-			KareemMock._posts.set('test', () => 'test');
+				KareemMock._pres.set('test', () => 'test');
+				KareemMock._posts.set('test', () => 'test');
 
-			await schema.executePostHooks('save', () => 'test');
-			await schema.executePreHooks('save', () => 'test');
+				await schema.executePostHooks('save', () => 'test', false);
+				await schema.executePreHooks('save', () => 'test', false);
 
-			expect(KareemMock.ExecutePostSpy).toHaveBeenCalledTimes(1);
-			expect(KareemMock.ExecutePreSpy).toHaveBeenCalledTimes(1);
+				expect(KareemMock.ExecutePostSpy).toHaveBeenCalledTimes(1);
+				expect(KareemMock.ExecutePreSpy).toHaveBeenCalledTimes(1);
+				expect(StripObjectSpy).toHaveBeenCalledTimes(2);
+			});
+
+			it('Should not call the stripObject if lean is true', async () => {
+				const schema = new Schema();
+
+				KareemMock._pres.set('test', () => 'test');
+				KareemMock._posts.set('test', () => 'test');
+
+				await schema.executePostHooks('save', () => 'test', true);
+				await schema.executePreHooks('save', () => 'test', true);
+
+				expect(KareemMock.ExecutePostSpy).toHaveBeenCalledTimes(1);
+				expect(KareemMock.ExecutePreSpy).toHaveBeenCalledTimes(1);
+				expect(StripObjectSpy).toHaveBeenCalledTimes(0);
+			});
 		});
 
 		it('Should not call the execute pre/post hooks function if no hooks registered', async () => {
@@ -158,8 +178,8 @@ describe('Schema', () => {
 
 			const schema = new Schema();
 
-			await schema.executePostHooks('save', () => 'test');
-			await schema.executePreHooks('save', () => 'test');
+			await schema.executePostHooks('save', () => 'test', false);
+			await schema.executePreHooks('save', () => 'test', false);
 
 			expect(KareemMock.ExecutePostSpy).toHaveBeenCalledTimes(0);
 			expect(KareemMock.ExecutePreSpy).toHaveBeenCalledTimes(0);

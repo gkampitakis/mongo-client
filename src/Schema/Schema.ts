@@ -38,7 +38,6 @@ export class Schema {
 	public executePreHooks(hook: HooksType, context: any, lean: boolean): Promise<void> {
 		return new Promise(resolve => {
 			if (this.hooks._pres.size <= 0) return resolve();
-			//TEST:
 			this.hooks.execPre(hook, lean ? context : stripObject(context), [context], () => {
 				resolve();
 			});
@@ -49,7 +48,6 @@ export class Schema {
 	public executePostHooks(hook: HooksType, context: any, lean: boolean): Promise<void> {
 		return new Promise(resolve => {
 			if (this.hooks._posts.size <= 0) return resolve();
-			//TEST:
 			this.hooks.execPost(hook, lean ? context : stripObject(context), [context], () => {
 				resolve();
 			});

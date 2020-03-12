@@ -31,7 +31,7 @@ function extractUniqueValues(data: any) {
 
 function objectEquality(source: any, target: any): boolean {
 	ObjectEqualitySpy(...arguments);
-    return equal(target, source);
+	return equal(target, source);
 }
 
 export {

@@ -133,15 +133,25 @@ describe('Model', () => {
 			expect(document).toEqual(data);
 			expect(DocumentSpy).not.toHaveBeenCalled();
 		});
-		//TEST: here write tests about pre/post save hook with lean option
+
 		it('Should call execute pre/post hooks if schema provided', async () => {
 			const testModel = Model('CreateModel', new Schema()),
 				data = { test: 'test' };
 
-			await testModel.create(data);
+			const doc = await testModel.create(data);
 
-			expect(SchemaMock.ExecutePostHooksSpy).toHaveBeenCalledTimes(1);
-			expect(SchemaMock.ExecutePreHooksSpy).toHaveBeenCalledTimes(1);
+			expect(SchemaMock.ExecutePostHooksSpy).toHaveBeenNthCalledWith(
+				1,
+				'create',
+				{ collectionName: 'CreateModel', data: { ...data, _id: doc.data._id } },
+				false
+			);
+			expect(SchemaMock.ExecutePreHooksSpy).toHaveBeenNthCalledWith(
+				1,
+				'create',
+				{ collectionName: 'CreateModel', data: { ...data, _id: doc.data._id } },
+				false
+			);
 			expect(MongoInstanceMock.InsertOneSpy).toHaveBeenCalled();
 		});
 
