@@ -7,8 +7,6 @@ import { SchemaDefinition } from '../Schema/Schema.interfaces';
 
 /** @internal */
 class InternalModel extends MongoInstance {
-	public static cache: Map<string, InternalModel> = new Map();
-
 	public constructor(collectionName: string, schema?: Schema) {
 		super(collectionName, schema);
 		if (schema?.schemaDefinition) this.prepareCollection(collectionName, schema!.schemaDefinition);
@@ -135,15 +133,7 @@ class InternalModel extends MongoInstance {
 }
 
 export function Model(collectionName: string, schema?: Schema): Model {
-	if (InternalModel.cache.has(collectionName)) {
-		return InternalModel.cache.get(collectionName) as Model;
-	}
-
-	const newModel = new InternalModel(collectionName, schema);
-
-	InternalModel.cache.set(collectionName, newModel);
-
-	return newModel as Model;
+	return new InternalModel(collectionName, schema) as Model;
 }
 
 export type Model = {
@@ -170,5 +160,4 @@ interface ExtendableObject {
 /**
  *  ------------ BACKLOG ------------
  *  //TODO: find the way that you write comments and they are shown above in the editor
- * //BUG: doesn't make sense the caching should be removed
  */
