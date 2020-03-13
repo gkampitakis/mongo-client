@@ -46,17 +46,7 @@ export async function createMethod(execute = false) {
 
 	await model.create({ field: '1' }, true), model.create({ field: '1' });
 
-	const newModel = Model('testingModel'); //TODO: this functionality will be removed
-	/**
-	 * Here we take the previous model which contains schema validation
-	 * so the code below will throw error
-	 **/
-
-	try {
-		await newModel.create({ field2: 'testField' });
-	} catch (error) {
-		logger.error(error);
-	}
+	const newModel = Model('testingModel');
 
 	let documentWrapped = await newModel.create({ field: '1' }),
 		document = await newModel.create({ field: '1' }, true);

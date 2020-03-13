@@ -82,8 +82,22 @@ class InternalModel extends MongoInstance {
 		});
 	}
 
-	public deleteOne(filter: object): Promise<DeleteWriteOpResultObject> {
-		return this.collection.deleteOne(filter);
+	public deleteOne(filter: object, lean = false): Promise<DeleteWriteOpResultObject | null> {
+		return new Promise(async resolve => {
+			const document = await this.collection.findOne(filter);
+
+			if (!document) return resolve(null);
+
+			const wrappedDoc = lean ? document : Document(this.collectionName, document, this._schema);
+
+			await this._schema?.executePreHooks('delete', wrappedDoc, lean);
+
+			const result = this.collection.deleteOne(filter);
+
+			await this._schema?.executePostHooks('delete', wrappedDoc, lean);
+
+			resolve(result);
+		});
 	}
 
 	public instance<Generic extends ExtendableObject>(data: Generic): Document<Generic & ExtendableObject> {
@@ -150,7 +164,7 @@ export type Model = {
 	findById(id: string, lean?: true): Promise<ExtendableObject>;
 	findOne(query: object, lean?: false): Promise<Document>;
 	findOne(query: object, lean?: true): Promise<ExtendableObject>;
-	deleteOne(filter: object): Promise<DeleteWriteOpResultObject>;
+	deleteOne(filter: object, lean?: boolean): Promise<DeleteWriteOpResultObject | null>;
 };
 
 interface ExtendableObject {
@@ -160,4 +174,5 @@ interface ExtendableObject {
 /**
  *  ------------ BACKLOG ------------
  *  //TODO: find the way that you write comments and they are shown above in the editor
+ *  //TODO: createIndex function
  */

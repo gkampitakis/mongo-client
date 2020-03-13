@@ -9,7 +9,8 @@ import {
 	findByIdAndUpdateMethod,
 	findByIdMethod,
 	findOneMethod,
-	instanceMethod
+	instanceMethod,
+	document
 } from './playground/';
 
 const logger = pino({ prettyPrint: { colorize: true } }),
@@ -32,13 +33,14 @@ async function Playground() {
 
 		logger.info('Database is setup and running');
 
-		await createMethod(); //DONE
-		await deleteManyMethod(); //DONE
-		await deleteOneMethod(); //DONE
-		await findByIdAndUpdateMethod();//DONE
-		await findByIdMethod(); //DONE
-		await findOneMethod();//DONE
+		await createMethod();
+		await deleteManyMethod();
+		await deleteOneMethod();
+		await findByIdAndUpdateMethod();
+		await findByIdMethod();
+		await findOneMethod();
 		await instanceMethod();
+		await document();
 	} catch (error) {
 		logger.error(error);
 	}

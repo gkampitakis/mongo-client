@@ -407,13 +407,64 @@ describe('Model', () => {
 	});
 
 	describe('Method deleteOne', () => {
-		it('Should call the mongodb deleteOne function', async () => {
+		it("Should not call the deleteOne if document doesn't exist", async () => {
 			const schema = new Schema(),
 				testModel = Model('test6', schema);
 
-			await testModel.deleteOne({});
+			await testModel.deleteOne({ field: 'test' });
 
-			expect(MongoInstanceMock.DeleteOneSpy).toHaveBeenNthCalledWith(1, {});
+			expect(MongoInstanceMock.DeleteOneSpy).toHaveBeenCalledTimes(0);
+		});
+
+		it('Should call deleteOne function and the execute pre/post hook with a wrapped document', async () => {
+			const schema = new Schema(),
+				testModel = Model('test6', schema);
+
+			const doc = await testModel.create({ field: 'test' }, true);
+
+			SchemaMock.ExecutePreHooksSpy.mockClear();
+			SchemaMock.ExecutePostHooksSpy.mockClear();
+
+			await testModel.deleteOne({ _id: doc._id }, true);
+
+			expect(SchemaMock.ExecutePreHooksSpy).toHaveBeenNthCalledWith(
+				1,
+				'delete',
+				{ field: 'test', _id: doc._id },
+				true
+			);
+			expect(SchemaMock.ExecutePostHooksSpy).toHaveBeenNthCalledWith(
+				1,
+				'delete',
+				{ field: 'test', _id: doc._id },
+				true
+			);
+			expect(MongoInstanceMock.DeleteOneSpy).toHaveBeenNthCalledWith(1, { _id: doc._id });
+		});
+
+		it('Should call the execute pre/post hook with a plain object', async () => {
+			const schema = new Schema(),
+				testModel = Model('test6', schema);
+
+			const doc = await testModel.create({ field: 'test' }, true);
+
+			SchemaMock.ExecutePreHooksSpy.mockClear();
+			SchemaMock.ExecutePostHooksSpy.mockClear();
+
+			await testModel.deleteOne({ _id: doc._id }, false);
+			expect(SchemaMock.ExecutePreHooksSpy).toHaveBeenNthCalledWith(
+				1,
+				'delete',
+				{ collectionName: 'test6', data: { field: 'test', _id: doc._id } },
+				false
+			);
+			expect(SchemaMock.ExecutePostHooksSpy).toHaveBeenNthCalledWith(
+				1,
+				'delete',
+				{ collectionName: 'test6', data: { field: 'test', _id: doc._id } },
+				false
+			);
+			expect(MongoInstanceMock.DeleteOneSpy).toHaveBeenNthCalledWith(1, { _id: doc._id });
 		});
 	});
 });

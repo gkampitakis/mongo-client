@@ -14,8 +14,6 @@ export async function deleteOneMethod(execute = false) {
 	logger.info(doc, '[Created Doc]');
 
 	const { result } = await model.deleteOne({ username: 'george' });
-	//TODO: add option of returning the data that got deleted
-    //Delete one will need different implementation
 	//TODO: add hooks here
 	logger.info(result, '[Delete Results]');
 
