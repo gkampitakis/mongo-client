@@ -25,7 +25,7 @@ export async function findByIdAndUpdateMethod(execute = false) {
 		},
 		required: ['field']
 	}),
-		model = Model('updateById', schema);
+		model = Model('updateByIdModel', schema);
 
 	schema.pre('update', function () {
 

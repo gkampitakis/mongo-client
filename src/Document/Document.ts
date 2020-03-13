@@ -18,13 +18,12 @@ class _Document extends MongoInstance {
 
 	public remove = (): Promise<{}> => {
 		return new Promise(async (resolve, reject) => {
-			//TODO: here we need to check the value passed if it changes
 			try {
-				await this._schema?.executePreHooks('delete', this, true);
+				await this._schema?.executePreHooks('delete', stripObject(this), true);
 
-				await this.collection.deleteOne({ _id: new ObjectID(this.data._id) });
+				await this.collection.deleteOne({ _id: this.data._id });
 
-				await this._schema?.executePostHooks('delete', this, true);
+				await this._schema?.executePostHooks('delete', stripObject(this), true);
 
 				resolve(stripObject(this));
 			} catch (error) {
@@ -39,11 +38,10 @@ class _Document extends MongoInstance {
 
 	public save = async (): Promise<Document> => {
 		return new Promise(async (resolve, reject) => {
-			//TODO: here we need to check the value passed if it changes and  if the value is saved
 			try {
 				this.prepareData(this.data);
 
-				await this._schema?.executePreHooks('save', this, true);
+				await this._schema?.executePreHooks('save', stripObject(this), true);
 
 				await this.collection.updateOne(
 					{
@@ -53,7 +51,7 @@ class _Document extends MongoInstance {
 					{ upsert: true }
 				);
 
-				await this._schema?.executePostHooks('save', this, true);
+				await this._schema?.executePostHooks('save', stripObject(this), true);
 
 				resolve(stripObject(this));
 			} catch (error) {

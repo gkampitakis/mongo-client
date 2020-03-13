@@ -14,7 +14,7 @@ import {
 } from './playground/';
 
 const logger = pino({ prettyPrint: { colorize: true } }),
-	mongoServer = process.argv[3] === 'server',
+	mongoServer = process.argv[2] === 'server',
 	mongodb = new MongoMemoryServer();
 
 function setupDatabase(uri: string, database: string) {
@@ -40,13 +40,12 @@ async function Playground() {
 		await findByIdMethod();
 		await findOneMethod();
 		await instanceMethod();
-		await document();
+		await document(true);
 	} catch (error) {
 		logger.error(error);
 	}
 }
 
 //check the validate as well and through robo mongo how we do changes
-//TODO: document
 
 Playground();
