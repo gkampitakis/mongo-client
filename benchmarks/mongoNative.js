@@ -1,3 +1,5 @@
+'use strict';
+
 const mongoDb = require('mongodb');
 
 let dbClient = null;
@@ -21,7 +23,22 @@ async function insertBenchmark(number) {
 			dbClient
 				.db('benchmarks')
 				.collection('mongoNative')
-				.insert({ data: i })
+				.insertOne({ data: i })
+		);
+	}
+
+	return Promise.all(promises);
+}
+
+async function deleteOneBenchmark(number) {
+	const promises = [];
+
+	for (let i = 0; i < number; i++) {
+		promises.push(
+			dbClient
+				.db('benchmarks')
+				.collection('mongoNative')
+				.deleteOne({})
 		);
 	}
 
@@ -30,5 +47,6 @@ async function insertBenchmark(number) {
 
 module.exports = {
 	setupDatabase,
-	insertBenchmark
+	insertBenchmark,
+	deleteOneBenchmark
 };

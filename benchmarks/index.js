@@ -1,20 +1,32 @@
+'use strict';
+
 const MongoMemoryServer = require('mongodb-memory-server').MongoMemoryServer,
-	{ setupDatabase, insertBenchmark } = require('./mongoDriver'),
-	{ setupDatabase: setupNative, insertBenchmark: insertNative } = require('./mongoNative'),
-	{ setupDatabase: setupMongoose, insertBenchmark: insertMongoose } = require('./mongoose'),
+	{ setupDatabase, insertBenchmark, deleteOneBenchmark } = require('./mongoDriver'),
+	{
+		setupDatabase: setupNative,
+		insertBenchmark: insertNative,
+		deleteOneBenchmark: deleteOneNative
+	} = require('./mongoNative'),
+	{
+		setupDatabase: setupMongoose,
+		insertBenchmark: insertMongoose,
+		deleteOneBenchmark: deleteOneMongoose
+	} = require('./mongoose'),
 	mongoServer = new MongoMemoryServer(),
 	logger = require('pino')({
-		prettyPrint: { colorize: true }
+		prettyPrint: {
+			colorize: true,
+			ignore: 'pid,hostname,time'
+		}
 	});
 
-const INSERTS = 10000;
+const INSERTS = 10000,
+	DELETES = 10000;
 
 async function Main() {
 	try {
 		await setupDatabases();
 		logger.info('Databases are initialized');
-
-		logger.info('Running MongoDriver');
 
 		await MongoDriverBenchmarks();
 
@@ -42,37 +54,54 @@ async function setupDatabases() {
 }
 
 async function MongoDriverBenchmarks() {
-	const start = process.hrtime();
-	return new Promise(async resolve => {
+	return benchmarkFunction('MongoDriver', async registerTimer => {
 		await insertBenchmark(INSERTS);
-
-		const end = process.hrtime(start);
-		logger.warn('[MongoDriver] Benchmarks duration: %ds %dms', end[0], end[1] / 1000000);
-		resolve();
+		registerTimer('insertBenchmark');
+		await deleteOneBenchmark(DELETES);
+		registerTimer('deleteOneBenchmark');
 	});
 }
 
 async function MongoNativeBenchmarks() {
-	const start = process.hrtime();
-	return new Promise(async resolve => {
+	return benchmarkFunction('Native', async registerTimer => {
 		await insertNative(INSERTS);
-
-		const end = process.hrtime(start);
-		logger.warn('[Native] Benchmarks duration: %ds %dms', end[0], end[1] / 1000000);
-		resolve();
+		registerTimer('insertNative');
+		await deleteOneNative(DELETES);
+		registerTimer('deleteOneNative');
 	});
 }
 
 async function MongooseBenchmarks() {
-	const start = process.hrtime();
-
-	return new Promise(async resolve => {
+	return benchmarkFunction('Mongoose', async registerTimer => {
 		await insertMongoose(INSERTS);
-
-		const end = process.hrtime(start);
-		logger.warn('[Mongoose] Benchmarks duration: %ds %dms', end[0], end[1] / 1000000);
-		resolve();
+		registerTimer('insertMongoose');
+		await deleteOneMongoose(DELETES);
+		registerTimer('deleteOneMongoose');
 	});
 }
 
 Main();
+
+async function benchmarkFunction(testedMethod, callback) {
+	const start = process.hrtime(),
+		timers = {};
+
+	let tempTimer = process.hrtime();
+
+	function registerTimer(operation) {
+		const timer = process.hrtime(tempTimer);
+		timers[operation] = `${timer[0]}s ${timer[1] / 1000000}ms`;
+		tempTimer = process.hrtime();
+	}
+
+	logger.info(`[${testedMethod}] Running...`);
+	await callback(registerTimer);
+
+	const end = process.hrtime(start);
+
+	logger.info(`[${testedMethod}] Benchmarks duration: %ds %dms`, end[0], end[1] / 1000000);
+	logger.info(timers);
+}
+
+//TODO: maybe we should have timers separately for each functionality
+//TODO: deleteOne optimization and create the deleteById benchmark the deleteOne with hooks and not

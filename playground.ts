@@ -13,7 +13,12 @@ import {
 	document
 } from './playground/';
 
-const logger = pino({ prettyPrint: { colorize: true } }),
+const logger = pino({
+		prettyPrint: {
+			colorize: true,
+			ignore: 'pid,hostname,time'
+		}
+	}),
 	mongoServer = process.argv[2] === 'server',
 	mongodb = new MongoMemoryServer();
 

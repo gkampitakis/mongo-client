@@ -1,3 +1,5 @@
+'use strict';
+
 const mongoDriver = require('../lib/index').MongoDriver,
 	Model = require('../lib/index').Model;
 
@@ -21,7 +23,19 @@ async function insertBenchmark(number) {
 	return Promise.all(promises);
 }
 
+async function deleteOneBenchmark(number) {
+	const promises = [],
+		model = Model('mongoDriver');
+
+	for (let i = 0; i < number; i++) {
+		promises.push(model.deleteOne({}));
+	}
+
+	return Promise.all(promises);
+}
+
 module.exports = {
 	setupDatabase,
-	insertBenchmark
+	insertBenchmark,
+	deleteOneBenchmark
 };
