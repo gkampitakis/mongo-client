@@ -102,6 +102,3 @@ async function benchmarkFunction(testedMethod, callback) {
 	logger.info(`[${testedMethod}] Benchmarks duration: %ds %dms`, end[0], end[1] / 1000000);
 	logger.info(timers);
 }
-
-//TODO: deleteOne optimization and benchmark the deleteOne with hooks and not
-//TODO:  implement the updateOne function

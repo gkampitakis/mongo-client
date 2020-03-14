@@ -49,6 +49,8 @@ describe('Document', () => {
 		MongoInstanceMock.UpdateOneSpy.mockClear();
 		MongoInstanceMock.DeleteOneSpy.mockClear();
 
+		MongoInstanceMock.throwError = false;
+
 		SchemaMock.schemaDefinition = {};
 	});
 
@@ -116,6 +118,13 @@ describe('Document', () => {
 			expect(result).toEqual(doc);
 		});
 
+		it('Should throw error', () => {
+			MongoInstanceMock.throwError = true;
+			const doc = Document('document_test', {});
+
+			expect(doc.remove()).rejects.toThrowError('MockError');
+		});
+
 		describe('When schema is not present', () => {
 			it('Should not call the execute pre/post hooks', async () => {
 				const doc = Document('document_test', {});
@@ -178,6 +187,14 @@ describe('Document', () => {
 				{ upsert: true }
 			);
 			expect(result).toEqual(doc);
+		});
+
+		it('Should throw error', () => {
+			MongoInstanceMock.throwError = true;
+
+			const doc = Document('test', {});
+
+			expect(doc.save()).rejects.toThrowError('MockError');
 		});
 
 		describe('When schema is present', () => {

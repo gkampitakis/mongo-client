@@ -17,6 +17,8 @@ export abstract class MongoInstance {
 	public static GetCollectionNameSpy = jest.fn();
 	public static GetCollectionSpy = jest.fn();
 
+	public static throwError = false;
+
 	public constructor(collectionName: string, schema: any) {
 		this._collectionName = collectionName;
 		this._schema = schema;
@@ -37,6 +39,8 @@ export abstract class MongoInstance {
 		return {
 			updateOne: (query: any, data: any, options: any) => {
 				MongoInstance.UpdateOneSpy(...arguments);
+				if (MongoInstance.throwError) throw new Error('MockError');
+
 				return MongoInstance.database.collection(this._collectionName).updateOne(query, data, options);
 			},
 			findOneAndUpdate: (query: any, data: any, options: any) => {
@@ -45,18 +49,25 @@ export abstract class MongoInstance {
 			},
 			deleteMany: (query: any) => {
 				MongoInstance.DeleteManySpy(query);
+				if (MongoInstance.throwError) throw new Error('MockError');
 				return MongoInstance.database.collection(this._collectionName).deleteMany(query);
 			},
 			insertOne: (data: any) => {
 				MongoInstance.InsertOneSpy(data);
+				if (MongoInstance.throwError) throw new Error('MockError');
 				return MongoInstance.database.collection(this._collectionName).insertOne(data);
 			},
 			findOne: (query: any) => {
 				MongoInstance.FindOneSpy(query);
+
+				if (MongoInstance.throwError) throw new Error('MockError');
+
 				return MongoInstance.database.collection(this._collectionName).findOne(query);
 			},
 			deleteOne: (query: any) => {
 				MongoInstance.DeleteOneSpy(query);
+				if (MongoInstance.throwError) throw new Error('MockError');
+
 				return MongoInstance.database.collection(this._collectionName).deleteOne(query);
 			},
 			createIndex: (value: any, index: any) => {
