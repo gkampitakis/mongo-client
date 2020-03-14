@@ -22,6 +22,14 @@ export class Schema {
 		if (schema) this.validator = ajv.compile(schema);
 	}
 
+	get hasPreHooks(): boolean {
+		return this.hooks._pres.size > 0;
+	}
+
+	get hasPostHooks(): boolean {
+		return this.hooks._posts.size > 0;
+	}
+
 	get schemaDefinition(): SchemaDefinition | undefined {
 		return this._schema;
 	}

@@ -14,6 +14,9 @@ describe('Schema', () => {
 		KareemMock.PreSpy.mockClear();
 		KareemMock.ExecutePreSpy.mockClear();
 		StripObjectSpy.mockClear();
+
+		KareemMock._pres = new Map();
+		KareemMock._posts = new Map();
 	});
 
 	describe('Method validate', () => {
@@ -138,6 +141,24 @@ describe('Schema', () => {
 
 			expect(KareemMock.PostSpy).toHaveBeenNthCalledWith(1, 'save', expect.any(Function));
 			expect(KareemMock.PreSpy).toHaveBeenNthCalledWith(1, 'save', expect.any(Function));
+		});
+	});
+
+	describe('Methods has hooks', () => {
+		it('Should return true if has registered hooks', () => {
+			KareemMock._pres.set('test', () => 'test');
+			KareemMock._posts.set('test', () => 'test');
+
+			const schema = new Schema();
+
+			expect(schema.hasPostHooks).toBe(true);
+			expect(schema.hasPreHooks).toBe(true);
+		});
+		it('Should return false if has not registered hooks', () => {
+			const schema = new Schema();
+
+			expect(schema.hasPostHooks).toBe(false);
+			expect(schema.hasPreHooks).toBe(false);
 		});
 	});
 

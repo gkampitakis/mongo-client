@@ -7,10 +7,20 @@ export class Schema {
 
 	public static schemaDefinition = {};
 
+	public static HasHooks = true;
+
 	public pre(hook: any, callback: any) {
 		Schema.PreHookSpy(...arguments);
 
 		callback();
+	}
+
+	get hasPreHooks(): boolean {
+		return Schema.HasHooks;
+	}
+
+	get hasPostHooks(): boolean {
+		return Schema.HasHooks;
 	}
 
 	get schemaDefinition() {
