@@ -58,6 +58,7 @@ describe('Model', () => {
 		MongoInstanceMock.DeleteOneSpy.mockClear();
 
 		SchemaMock.schemaDefinition = {};
+		SchemaMock.HasHooks = true;
 	});
 
 	describe('Constructor', () => {
@@ -165,6 +166,14 @@ describe('Model', () => {
 			expect(SchemaMock.ExecutePreHooksSpy).toHaveBeenCalledTimes(0);
 			expect(MongoInstanceMock.InsertOneSpy).toHaveBeenCalled();
 		});
+
+		it('Should throw error', () => {
+			MongoInstanceMock.throwError = true;
+
+			const testModel = Model('test', new Schema());
+
+			expect(testModel.create({})).rejects.toThrowError('MockError');
+		});
 	});
 
 	describe('Method deleteMany', () => {
@@ -176,6 +185,14 @@ describe('Model', () => {
 
 			expect(MongoInstanceMock.DeleteManySpy).toHaveBeenNthCalledWith(1, {});
 			expect(res).toBeUndefined;
+		});
+
+		it('Should throw Error', async () => {
+			MongoInstanceMock.throwError = true;
+
+			const testModel = Model('test');
+
+			expect(testModel.deleteMany({})).rejects.toThrowError('MockError');
 		});
 	});
 
@@ -244,6 +261,14 @@ describe('Model', () => {
 				1,
 				{ _id: new ObjectID(result._id) },
 				{ $set: { test: { test: 'test' } } }
+			);
+		});
+
+		it('Should throw error', async () => {
+			const model = Model('test');
+
+			expect(model.findByIdAndUpdate('321331', {})).rejects.toThrowError(
+				'Argument passed in must be a single String of 12 bytes or a string of 24 hex characters'
 			);
 		});
 
@@ -407,18 +432,21 @@ describe('Model', () => {
 			expect(doc).toEqual({ ...data, _id: result.data._id });
 			expect(doc).not.toBeInstanceOf(Document);
 		});
+
+		it('Should reject error', async () => {
+			const testModel = Model('test');
+
+			MongoInstanceMock.throwError = true;
+
+			try {
+				await testModel.findOne({});
+			} catch (error) {
+				expect(error.message).toBe('MockError');
+			}
+		});
 	});
 
 	describe('Method deleteOne', () => {
-		it("Should not call the deleteOne if document doesn't exist", async () => {
-			const schema = new Schema(),
-				testModel = Model('test6', schema);
-
-			await testModel.deleteOne({ field: 'test' });
-
-			expect(MongoInstanceMock.DeleteOneSpy).toHaveBeenCalledTimes(0);
-		});
-
 		it('Should call deleteOne function and the execute pre/post hook with a wrapped document', async () => {
 			const schema = new Schema(),
 				testModel = Model('test6', schema);
@@ -468,6 +496,34 @@ describe('Model', () => {
 				false
 			);
 			expect(MongoInstanceMock.DeleteOneSpy).toHaveBeenNthCalledWith(1, { _id: doc._id });
+		});
+
+		it('Should return null if document not found', async () => {
+			const schema = new Schema(),
+				testModel = Model('test6', schema);
+
+			const result = await testModel.deleteOne({ _id: '5e4acf03d8e9435b2a2640ae' }, false);
+
+			expect(result).toBeNull();
+		});
+
+		describe('when no hooks registered', () => {
+			it('Should not call the execute pre/post hook', async () => {
+				const schema = new Schema(),
+					testModel = Model('test6', schema);
+
+				SchemaMock.HasHooks = false;
+
+				const doc = await testModel.create({ field: 'test' }, true);
+
+				SchemaMock.ExecutePreHooksSpy.mockClear();
+				SchemaMock.ExecutePostHooksSpy.mockClear();
+
+				await testModel.deleteOne({ _id: doc._id }, false);
+				expect(SchemaMock.ExecutePreHooksSpy).not.toHaveBeenCalled();
+				expect(SchemaMock.ExecutePostHooksSpy).not.toHaveBeenCalled();
+				expect(MongoInstanceMock.DeleteOneSpy).toHaveBeenNthCalledWith(1, { _id: doc._id });
+			});
 		});
 	});
 	describe('Method findByIdAndDelete', () => {

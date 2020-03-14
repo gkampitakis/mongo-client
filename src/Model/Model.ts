@@ -89,6 +89,11 @@ class InternalModel extends MongoInstance {
 	}
 
 	public deleteOne(filter: object, lean = false): Promise<DeleteWriteOpResultObject | null> {
+		if (this._schema?.hasPreHooks || this._schema?.hasPostHooks) return this.deleteOneWithHooks(filter, lean);
+		return this.deleteOneWithoutHooks(filter);
+	}
+
+	private deleteOneWithHooks(filter: object, lean = false): Promise<DeleteWriteOpResultObject | null> {
 		return new Promise(async resolve => {
 			const document = await this.collection.findOne(filter);
 
@@ -106,11 +111,15 @@ class InternalModel extends MongoInstance {
 		});
 	}
 
+	private deleteOneWithoutHooks(filter: object): Promise<DeleteWriteOpResultObject | null> {
+		return this.collection.deleteOne(filter);
+	}
+
 	public instance<Generic extends ExtendableObject>(data: Generic): Document<Generic & ExtendableObject> {
 		return Document<Generic & ExtendableObject>(this.collectionName, data, this._schema);
 	}
 
-	public create<Generic>(data: Generic, lean = false): Promise<any> {
+	public create(data: object, lean = false): Promise<any> {
 		return new Promise(async (resolve, reject) => {
 			try {
 				let wrappedDoc: any;
@@ -134,6 +143,10 @@ class InternalModel extends MongoInstance {
 			}
 		});
 	}
+
+	// public updateOne(){//TODO: implement
+
+	// }
 
 	private async prepareCollection(collectionName: string, schemaDefinition: SchemaDefinition) {
 		const collectionExists = await this.collectionExists(collectionName);
