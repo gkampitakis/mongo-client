@@ -342,17 +342,20 @@ describe('Model', () => {
 	});
 
 	describe('Method findById ', () => {
-		it('Should call the objectId', async () => {
+		it('Should call findOne', async () => {
 			const schema = new Schema(),
-				testModel = Model('test3', schema);
+				testModel = Model('test3', schema),
+				FindOneSpy = jest.spyOn(testModel, 'findOne');
 
 			await testModel.findById('5e4acf03d8e9435b2a2640ae');
 
-			expect(MongoInstanceMock.GetCollectionSpy).toHaveBeenCalledTimes(2);
-			expect(ObjectIdSpy).toHaveBeenNthCalledWith(1, '5e4acf03d8e9435b2a2640ae');
-			expect(MongoInstanceMock.FindOneSpy).toHaveBeenNthCalledWith(1, {
-				_id: new ObjectID('5e4acf03d8e9435b2a2640ae')
-			});
+			expect(FindOneSpy).toHaveBeenNthCalledWith(
+				1,
+				{
+					_id: new ObjectID('5e4acf03d8e9435b2a2640ae')
+				},
+				false
+			);
 		});
 	});
 
@@ -467,4 +470,19 @@ describe('Model', () => {
 			expect(MongoInstanceMock.DeleteOneSpy).toHaveBeenNthCalledWith(1, { _id: doc._id });
 		});
 	});
+	describe('Method findByIdAndDelete', () => {
+		it('Should call the deleteOne method', async () => {
+			const model = Model('test'),
+				doc = await model.create({ field: 'test' }, true),
+				DeleteOneSpy = jest.spyOn(model, 'deleteOne');
+
+			SchemaMock.ExecutePreHooksSpy.mockClear();
+			SchemaMock.ExecutePostHooksSpy.mockClear();
+
+			await model.findByIdAndDelete(doc._id);
+
+			expect(DeleteOneSpy).toHaveBeenNthCalledWith(1, { _id: doc._id }, false);
+		});
+	});
+	// describe('Method updateOne', () => {});
 });

@@ -103,5 +103,5 @@ async function benchmarkFunction(testedMethod, callback) {
 	logger.info(timers);
 }
 
-//TODO: maybe we should have timers separately for each functionality
-//TODO: deleteOne optimization and create the deleteById benchmark the deleteOne with hooks and not
+//TODO: deleteOne optimization and benchmark the deleteOne with hooks and not
+//TODO:  implement the updateOne function

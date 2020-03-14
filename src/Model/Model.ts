@@ -30,10 +30,16 @@ class InternalModel extends MongoInstance {
 		});
 	}
 
-	public findById(id: string, lean?: boolean): Promise<any> {
+	public findById(id: string, lean = false): Promise<any> {
 		const _id = objectID(id);
 
 		return this.findOne({ _id }, lean);
+	}
+
+	public findByIdAndDelete(id: string, lean = false): Promise<any> {
+		const _id = objectID(id);
+
+		return this.deleteOne({ _id }, lean);
 	}
 
 	public findByIdAndUpdate(id: string, update: object, lean = false): Promise<any> {
@@ -165,6 +171,7 @@ export type Model = {
 	findOne(query: object, lean?: false): Promise<Document>;
 	findOne(query: object, lean?: true): Promise<ExtendableObject>;
 	deleteOne(filter: object, lean?: boolean): Promise<DeleteWriteOpResultObject | null>;
+	findByIdAndDelete(id: string, lean?: boolean): Promise<DeleteWriteOpResultObject | null>;
 };
 
 interface ExtendableObject {

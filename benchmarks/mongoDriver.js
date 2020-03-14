@@ -34,6 +34,12 @@ async function deleteOneBenchmark(number) {
 	return Promise.all(promises);
 }
 
+async function updateOneBenchmark(number) {}
+
+async function findByIdAndUpdate(number) {}
+
+async function findByIdAndDelete(number) {}
+
 module.exports = {
 	setupDatabase,
 	insertBenchmark,
