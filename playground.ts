@@ -1,5 +1,4 @@
 import { MongoDriver } from './index';
-import mongoLocal from 'mongodb';
 import pino from 'pino';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import {
