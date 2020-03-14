@@ -31,21 +31,21 @@ class InternalModel extends MongoInstance {
 	}
 
 	public findById(id: string, lean = false): Promise<any> {
-		const _id = objectID(id);
-
-		return this.findOne({ _id }, lean);
+		return this.findOne({ _id: id }, lean);
 	}
 
 	public findByIdAndDelete(id: string, lean = false): Promise<any> {
-		const _id = objectID(id);
-
-		return this.deleteOne({ _id }, lean);
+		return this.deleteOne({ _id: id }, lean);
 	}
 
 	public findByIdAndUpdate(id: string, update: object, lean = false): Promise<any> {
+		return this.updateOne({ _id: id }, update, lean);
+	}
+
+	public updateOne(filter: object, update: object, lean = false): Promise<any> {
 		return new Promise(async (resolve, reject) => {
 			try {
-				const document = await this.findById(id, true);
+				const document = await this.findOne(filter, true);
 
 				if (!document) return resolve(null);
 
@@ -59,7 +59,7 @@ class InternalModel extends MongoInstance {
 
 				await this._schema?.executePreHooks('update', wrappedDoc, lean);
 
-				await this.collection.updateOne({ _id: id }, { $set: update });
+				await this.collection.updateOne(filter, { $set: update });
 
 				if (lean) {
 					wrappedDoc = { ...wrappedDoc, ...update };
@@ -144,10 +144,6 @@ class InternalModel extends MongoInstance {
 		});
 	}
 
-	// public updateOne(){//TODO: implement
-
-	// }
-
 	private async prepareCollection(collectionName: string, schemaDefinition: SchemaDefinition) {
 		const collectionExists = await this.collectionExists(collectionName);
 
@@ -179,6 +175,8 @@ export type Model = {
 	deleteMany(filter: FilterQuery<object>): Promise<DeleteWriteOpResultObject>;
 	findByIdAndUpdate(id: string, update: object, lean?: false): Promise<Document>;
 	findByIdAndUpdate(id: string, update: object, lean?: true): Promise<ExtendableObject>;
+	updateOne(filter: object, update: object, lean?: false): Promise<Document>;
+	updateOne(filter: object, update: object, lean?: true): Promise<ExtendableObject>;
 	findById(id: string, lean?: false): Promise<Document>;
 	findById(id: string, lean?: true): Promise<ExtendableObject>;
 	findOne(query: object, lean?: false): Promise<Document>;

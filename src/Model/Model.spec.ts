@@ -196,14 +196,14 @@ describe('Model', () => {
 		});
 	});
 
-	describe('Method findByIdAndUpdate', () => {
+	describe('Method UpdateOne', () => {
 		it('Should return null if not found', async () => {
 			const schema = new Schema(),
 				testModel = Model('test2', schema);
-			const result = await testModel.findByIdAndUpdate('5e4acf03d8e9435b2a2640ae', { test: 'test' });
+			const result = await testModel.updateOne({ _id: '5e4acf03d8e9435b2a2640ae' }, { test: 'test' });
 
 			expect(MongoInstanceMock.FindOneSpy).toHaveBeenNthCalledWith(1, {
-				_id: new ObjectID('5e4acf03d8e9435b2a2640ae')
+				_id: '5e4acf03d8e9435b2a2640ae'
 			});
 			expect(MongoInstanceMock.GetCollectionSpy).toHaveBeenCalledTimes(2);
 			expect(result).toBeNull();
@@ -216,7 +216,7 @@ describe('Model', () => {
 
 			MongoInstanceMock.GetCollectionSpy.mockClear();
 
-			const result = await testModel.findByIdAndUpdate(doc._id, {});
+			const result = await testModel.updateOne({ _id: doc._id }, {});
 
 			expect(SchemaMock.ValidateSpy).toHaveBeenCalledTimes(1);
 			expect(ObjectEqualitySpy).toHaveBeenCalledTimes(1);
@@ -232,7 +232,7 @@ describe('Model', () => {
 			const doc = await testModel.create(data, true);
 
 			MongoInstanceMock.GetCollectionSpy.mockClear();
-			const result = await testModel.findByIdAndUpdate(doc._id as string, updatedData);
+			const result = await testModel.updateOne({ _id: doc._id }, updatedData);
 
 			expect(result).toHaveProperty('collectionName');
 			expect(result.data).toEqual({
@@ -253,7 +253,7 @@ describe('Model', () => {
 				updatedData = { test: { test: 'test' } };
 			const result = await testModel.create(data, true);
 			SchemaMock.ValidateSpy.mockClear();
-			await testModel.findByIdAndUpdate(result._id as string, updatedData);
+			await testModel.updateOne({ _id: result._id }, updatedData);
 			expect(SchemaMock.ValidateSpy).toHaveBeenCalledTimes(0);
 			expect(ObjectEqualitySpy).toHaveBeenCalledTimes(1);
 			expect(MongoInstanceMock.FindOneSpy).toHaveBeenNthCalledWith(1, { _id: new ObjectID(result._id) });
@@ -267,9 +267,9 @@ describe('Model', () => {
 		it('Should throw error', async () => {
 			const model = Model('test');
 
-			expect(model.findByIdAndUpdate('321331', {})).rejects.toThrowError(
-				'Argument passed in must be a single String of 12 bytes or a string of 24 hex characters'
-			);
+			MongoInstanceMock.throwError = true;
+
+			expect(model.updateOne({ _id: '321331' }, {})).rejects.toThrowError('MockError');
 		});
 
 		describe('Pre/post hooks', () => {
@@ -283,7 +283,7 @@ describe('Model', () => {
 				SchemaMock.ExecutePostHooksSpy.mockClear();
 				SchemaMock.ExecutePreHooksSpy.mockClear();
 
-				await testModel.findByIdAndUpdate(doc._id as string, updatedData, true);
+				await testModel.updateOne({ _id: doc._id }, updatedData, true);
 
 				expect(SchemaMock.ExecutePreHooksSpy).toHaveBeenNthCalledWith(
 					1,
@@ -320,7 +320,7 @@ describe('Model', () => {
 				SchemaMock.ExecutePostHooksSpy.mockClear();
 				SchemaMock.ExecutePreHooksSpy.mockClear();
 
-				await testModel.findByIdAndUpdate(doc._id as string, updatedData);
+				await testModel.updateOne({ _id: doc._id }, updatedData);
 
 				expect(SchemaMock.ExecutePreHooksSpy).toHaveBeenNthCalledWith(
 					1,
@@ -357,7 +357,7 @@ describe('Model', () => {
 				SchemaMock.ExecutePostHooksSpy.mockClear();
 				SchemaMock.ExecutePreHooksSpy.mockClear();
 
-				await testModel.findByIdAndUpdate(doc._id as string, updatedData);
+				await testModel.updateOne({ _id: doc._id }, updatedData);
 
 				expect(SchemaMock.ExecutePostHooksSpy).not.toHaveBeenCalled();
 				expect(SchemaMock.ExecutePreHooksSpy).not.toHaveBeenCalled();
@@ -377,7 +377,7 @@ describe('Model', () => {
 			expect(FindOneSpy).toHaveBeenNthCalledWith(
 				1,
 				{
-					_id: new ObjectID('5e4acf03d8e9435b2a2640ae')
+					_id: '5e4acf03d8e9435b2a2640ae'
 				},
 				false
 			);
@@ -540,5 +540,14 @@ describe('Model', () => {
 			expect(DeleteOneSpy).toHaveBeenNthCalledWith(1, { _id: doc._id }, false);
 		});
 	});
-	// describe('Method updateOne', () => {});
+	describe('Method findByIdAndUpdate', () => {
+		it('Should call the updateOne', async () => {
+			const model = Model('test'),
+				UpdateOneSpy = jest.spyOn(model, 'updateOne');
+
+			await model.findByIdAndUpdate('1233131', {});
+
+			expect(UpdateOneSpy).toHaveBeenNthCalledWith(1, { _id: '1233131' }, {}, false);
+		});
+	});
 });
