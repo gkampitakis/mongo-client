@@ -1,7 +1,8 @@
 'use strict';
 
 const mongoDriver = require('../lib/index').MongoDriver,
-	Model = require('../lib/index').Model;
+	Model = require('../lib/index').Model,
+	Schema = require('../lib/index').Schema;
 
 async function setupDatabase(uri, databaseName) {
 	return mongoDriver.connect(uri, databaseName, {
@@ -10,7 +11,7 @@ async function setupDatabase(uri, databaseName) {
 	});
 }
 
-async function insertBenchmark(number) {
+async function saveBenchmark(number) {
 	const promises = [],
 		model = Model('mongoDriver');
 
@@ -18,6 +19,62 @@ async function insertBenchmark(number) {
 		const doc = model.instance({ data: i });
 
 		promises.push(doc.save());
+	}
+
+	return Promise.all(promises);
+}
+
+async function saveBenchmarkWithHooks(number) {
+	const promises = [],
+		schema = new Schema(),
+		model = Model('mongoDriverHooks', schema);
+
+	let counter = 0;
+
+	schema.pre('save', function() {
+		counter++;
+	});
+
+	schema.post('save', function() {
+		counter++;
+	});
+
+	for (let i = 0; i < number; i++) {
+		const doc = model.instance({ data: i });
+		promises.push(doc.save());
+	}
+
+	return Promise.all(promises);
+}
+
+async function createBenchmark(number) {
+	const promises = [],
+		model = Model('mongoDriver');
+
+	for (let i = 0; i < number; i++) {
+		promises.push(model.create({ data: i }));
+	}
+
+	return Promise.all(promises);
+}
+
+async function createBenchmarkWithHooks(number) {
+	const promises = [],
+		schema = new Schema(),
+		model = Model('mongoDriverHooks', schema);
+
+	let counter = 0;
+
+	schema.pre('save', function() {
+		counter++;
+	});
+
+	schema.post('save', function() {
+		counter++;
+	});
+
+	for (let i = 0; i < number; i++) {
+		promises.push(model.create({ data: i }));
 	}
 
 	return Promise.all(promises);
@@ -34,14 +91,82 @@ async function deleteOneBenchmark(number) {
 	return Promise.all(promises);
 }
 
-async function updateOneBenchmark(number) {}
+async function deleteOneBenchmarkWithHooks(number) {
+	const promises = [],
+		schema = new Schema(),
+		model = Model('mongoDriverHooks', schema);
 
-async function findByIdAndUpdate(number) {}
+	let counter = 0;
 
-async function findByIdAndDelete(number) {}
+	schema.pre('save', function() {
+		counter++;
+	});
+
+	schema.post('save', function() {
+		counter++;
+	});
+
+	for (let i = 0; i < number; i++) {
+		promises.push(model.deleteOne({}));
+	}
+
+	return Promise.all(promises);
+}
+
+async function findOneBenchmark(number) {
+	const promises = [],
+		model = Model('mongoDriver');
+
+	for (let i = 0; i < number; i++) {
+		promises.push(model.findOne({}));
+	}
+
+	return Promise.all(promises);
+}
+
+async function updateOneBenchmark(number) {
+	const promises = [],
+		model = Model('mongoDriver');
+
+	for (let i = 0; i < number; i++) {
+		promises.push(model.updateOne({}, { newData: 'data' }));
+	}
+
+	return Promise.all(promises);
+}
+
+async function updateOneBenchmarkWithHooks(number) {
+	const promises = [],
+		schema = new Schema(),
+		model = Model('mongoDriverHooks', schema);
+
+	let counter = 0;
+
+	schema.pre('save', function() {
+		counter++;
+	});
+
+	schema.post('save', function() {
+		counter++;
+	});
+
+	for (let i = 0; i < number; i++) {
+		promises.push(model.updateOne({}, { newData: 'data' }));
+	}
+
+	return Promise.all(promises);
+}
 
 module.exports = {
 	setupDatabase,
-	insertBenchmark,
-	deleteOneBenchmark
+	saveBenchmark,
+	saveBenchmarkWithHooks,
+	createBenchmark,
+	createBenchmarkWithHooks,
+	deleteOneBenchmark,
+	deleteOneBenchmarkWithHooks,
+	findOneBenchmark,
+	findOneBenchmark,
+	updateOneBenchmark,
+	updateOneBenchmarkWithHooks
 };

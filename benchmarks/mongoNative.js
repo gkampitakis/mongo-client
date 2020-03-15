@@ -45,8 +45,40 @@ async function deleteOneBenchmark(number) {
 	return Promise.all(promises);
 }
 
+async function updateOneBenchmark(number) {
+	const promises = [];
+
+	for (let i = 0; i < number; i++) {
+		promises.push(
+			dbClient
+				.db('benchmarks')
+				.collection('mongoNative')
+				.update({}, { data: 'data' })
+		);
+	}
+
+	return Promise.all(promises);
+}
+
+async function findOneBenchmark(number) {
+	const promises = [];
+
+	for (let i = 0; i < number; i++) {
+		promises.push(
+			dbClient
+				.db('benchmarks')
+				.collection('mongoNative')
+				.findOne({})
+		);
+	}
+
+	return Promise.all(promises);
+}
+
 module.exports = {
 	setupDatabase,
 	insertBenchmark,
+	findOneBenchmark,
+	updateOneBenchmark,
 	deleteOneBenchmark
 };

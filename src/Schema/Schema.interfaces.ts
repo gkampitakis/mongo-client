@@ -79,6 +79,3 @@ export interface ValidatorOptions {
 	removeAdditional: 'all' | 'failing' | boolean;
 	allErrors?: boolean;
 }
-
-//TODO: read again the documentation and re revaluate
-//TODO: Write comments for the interfaces ???

@@ -191,6 +191,7 @@ interface ExtendableObject {
 
 /**
  *  ------------ BACKLOG ------------
- *  //TODO: find the way that you write comments and they are shown above in the editor
- *  //TODO: createIndex function
+ *  //TODO: optimize methods
+ * 
+ * 
  */
