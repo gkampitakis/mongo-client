@@ -197,17 +197,6 @@ describe('Model', () => {
 	});
 
 	describe('Method UpdateOne', () => {
-		it('Should return null if not found', async () => {
-			const schema = new Schema(),
-				testModel = Model('test2', schema);
-			const result = await testModel.updateOne({ _id: '5e4acf03d8e9435b2a2640ae' }, { test: 'test' });
-
-			expect(MongoInstanceMock.FindOneSpy).toHaveBeenNthCalledWith(1, {
-				_id: '5e4acf03d8e9435b2a2640ae'
-			});
-			expect(MongoInstanceMock.GetCollectionSpy).toHaveBeenCalledTimes(2);
-			expect(result).toBeNull();
-		});
 		it('Should return the same document if no updates are made', async () => {
 			const schema = new Schema(),
 				testModel = Model('test2', schema);
