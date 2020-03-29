@@ -1,6 +1,6 @@
 language: node_js
 node_js:
-  - 'latest'
+  - 10.19
 
 before_install:
   - npm install
