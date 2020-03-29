@@ -1,0 +1,10 @@
+language: node_js
+node_js:
+    - 'latest'
+
+deploy:
+    provider: npm
+    on:
+        branch: master
+    email: 'gkabitakis@gmail.com'
+    api_key: NPM_API_TOKEN
