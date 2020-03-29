@@ -197,17 +197,6 @@ describe('Model', () => {
 	});
 
 	describe('Method UpdateOne', () => {
-		it('Should return null if not found', async () => {
-			const schema = new Schema(),
-				testModel = Model('test2', schema);
-			const result = await testModel.updateOne({ _id: '5e4acf03d8e9435b2a2640ae' }, { test: 'test' });
-
-			expect(MongoInstanceMock.FindOneSpy).toHaveBeenNthCalledWith(1, {
-				_id: '5e4acf03d8e9435b2a2640ae'
-			});
-			expect(MongoInstanceMock.GetCollectionSpy).toHaveBeenCalledTimes(2);
-			expect(result).toBeNull();
-		});
 		it('Should return the same document if no updates are made', async () => {
 			const schema = new Schema(),
 				testModel = Model('test2', schema);
@@ -385,18 +374,6 @@ describe('Model', () => {
 	});
 
 	describe('Method findOne', () => {
-		it("Should return null if the doc doesn't exist and not proceed", async () => {
-			const schema = new Schema(),
-				testModel = Model('test4', schema);
-
-			const result = await testModel.findOne({ name: 'name' });
-
-			expect(result).toBeNull();
-			expect(MongoInstanceMock.GetCollectionSpy).toHaveBeenCalledTimes(2);
-			expect(DocumentSpy).toHaveBeenCalledTimes(0);
-			expect(MongoInstanceMock.FindOneSpy).toHaveBeenNthCalledWith(1, { name: 'name' });
-		});
-
 		it('Should return a wrapped document', async () => {
 			const schema = new Schema(),
 				testModel = Model('test5', schema),
