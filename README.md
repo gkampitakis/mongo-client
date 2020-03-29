@@ -1,6 +1,7 @@
 # Mongo Driver Typescript
 
 [![Build Status](https://travis-ci.org/gkampitakis/MongoDriver.svg?branch=master)](https://travis-ci.org/gkampitakis/MongoDriver)
+[![Coverage Status](https://coveralls.io/repos/github/gkampitakis/MongoDriver/badge.svg?branch=master)](https://coveralls.io/github/gkampitakis/MongoDriver?branch=master)
 
 The purpose of this module is to provide a wrapper for using mongodb functions easier and provide a straightforward way of supporting schema validation.
 

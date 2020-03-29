@@ -13,7 +13,8 @@
 		"lint": "eslint src/**/*.ts",
 		"clean": "rimraf ./lib ./coverage",
 		"prepublishOnly": "npm run build",
-		"benchmarks": "npm run build && node ./benchmarks/index.js"
+		"benchmarks": "npm run build && node ./benchmarks/index.js",
+		"coveralls": "jest --coverage && cat ./coverage/lcov.info | coveralls"
 	},
 	"keywords": [
 		"mongodb",
