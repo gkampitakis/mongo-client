@@ -39,7 +39,6 @@ describe('Document', () => {
 		SchemaMock.PostHookSpy.mockClear();
 		SchemaMock.ExecutePreHooksSpy.mockClear();
 		SchemaMock.ExecutePostHooksSpy.mockClear();
-		MongoInstanceMock.GetCollectionSpy.mockClear();
 		MongoInstanceMock.GetCollectionNameSpy.mockClear();
 		ObjectIdSpy.mockClear();
 		StripObjectSpy.mockClear();
@@ -159,7 +158,6 @@ describe('Document', () => {
 
 			const result = await doc.save();
 
-			expect(MongoInstanceMock.GetCollectionSpy).toBeCalledTimes(1);
 			expect(SchemaMock.ValidateSpy).toHaveBeenNthCalledWith(1, data);
 			expect(MongoInstanceMock.UpdateOneSpy).toHaveBeenNthCalledWith(
 				1,
@@ -178,7 +176,6 @@ describe('Document', () => {
 
 			const result = await doc.save();
 
-			expect(MongoInstanceMock.GetCollectionSpy).toBeCalledTimes(1);
 			expect(SchemaMock.ValidateSpy).not.toHaveBeenCalled();
 			expect(MongoInstanceMock.UpdateOneSpy).toHaveBeenNthCalledWith(
 				1,

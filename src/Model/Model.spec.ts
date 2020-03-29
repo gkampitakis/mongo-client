@@ -42,7 +42,6 @@ describe('Model', () => {
 		SchemaMock.ExecutePreHooksSpy.mockClear();
 		SchemaMock.ExecutePostHooksSpy.mockClear();
 		SchemaMock.ValidateSpy.mockClear();
-		MongoInstanceMock.GetCollectionSpy.mockClear();
 		MongoInstanceMock.GetCollectionNameSpy.mockClear();
 		ObjectIdSpy.mockClear();
 		IsEmptyObjectSpy.mockClear();
@@ -119,7 +118,6 @@ describe('Model', () => {
 				data: { _id: expect.any(String), ...data },
 				collectionName: 'test1'
 			});
-			expect(MongoInstanceMock.GetCollectionSpy).toHaveBeenCalledTimes(1);
 			expect(DocumentSpy).toHaveBeenNthCalledWith(1, 'test1', data, schema);
 			expect(MongoInstanceMock.InsertOneSpy).toHaveBeenNthCalledWith(1, data);
 		});
@@ -205,7 +203,6 @@ describe('Model', () => {
 			expect(MongoInstanceMock.FindOneSpy).toHaveBeenNthCalledWith(1, {
 				_id: '5e4acf03d8e9435b2a2640ae'
 			});
-			expect(MongoInstanceMock.GetCollectionSpy).toHaveBeenCalledTimes(2);
 			expect(result).toBeNull();
 		});
 		it('Should return the same document if no updates are made', async () => {
@@ -214,13 +211,10 @@ describe('Model', () => {
 
 			const doc = await testModel.create({ test: 'test' }, true);
 
-			MongoInstanceMock.GetCollectionSpy.mockClear();
-
 			const result = await testModel.updateOne({ _id: doc._id }, {});
 
 			expect(SchemaMock.ValidateSpy).toHaveBeenCalledTimes(1);
 			expect(ObjectEqualitySpy).toHaveBeenCalledTimes(1);
-			expect(MongoInstanceMock.GetCollectionSpy).toHaveBeenCalledTimes(1);
 			expect(result).toEqual({ _id: doc._id, test: 'test' });
 			expect(MongoInstanceMock.FindOneSpy).toHaveBeenCalledTimes(1);
 		});
@@ -231,7 +225,6 @@ describe('Model', () => {
 				updatedData = { test: 'test2' };
 			const doc = await testModel.create(data, true);
 
-			MongoInstanceMock.GetCollectionSpy.mockClear();
 			const result = await testModel.updateOne({ _id: doc._id }, updatedData);
 
 			expect(result).toHaveProperty('collectionName');
@@ -239,7 +232,6 @@ describe('Model', () => {
 				_id: doc._id,
 				...updatedData
 			});
-			expect(MongoInstanceMock.GetCollectionSpy).toHaveBeenCalledTimes(2);
 			expect(MongoInstanceMock.FindOneSpy).toHaveBeenNthCalledWith(1, { _id: new ObjectID(doc._id) });
 			expect(MongoInstanceMock.UpdateOneSpy).toHaveBeenNthCalledWith(
 				1,
@@ -392,7 +384,6 @@ describe('Model', () => {
 			const result = await testModel.findOne({ name: 'name' });
 
 			expect(result).toBeNull();
-			expect(MongoInstanceMock.GetCollectionSpy).toHaveBeenCalledTimes(2);
 			expect(DocumentSpy).toHaveBeenCalledTimes(0);
 			expect(MongoInstanceMock.FindOneSpy).toHaveBeenNthCalledWith(1, { name: 'name' });
 		});
