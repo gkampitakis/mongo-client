@@ -1,0 +1,21 @@
+language: node_js
+node_js:
+  - 10.19
+
+branches:
+  only:
+    - master
+    - type=pull_request
+
+before_install:
+  - echo "//registry.npmjs.org/:_authToken=\${NPM_API_TOKEN}" > .npmrc
+  - npm install
+  - npm run test
+
+deploy:
+  provider: npm
+  on:
+    branch: master
+  email: 'gkabitakis@gmail.com'
+  api_key: NPM_API_TOKEN
+  skip_cleanup: true
