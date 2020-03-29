@@ -3,6 +3,7 @@ node_js:
   - 10.19
 
 before_install:
+  - echo "//registry.npmjs.org/:_authToken=\${NPM_API_TOKEN}" > .npmrc
   - npm install
   - npm run test
 
@@ -12,3 +13,4 @@ deploy:
     branch: master
   email: 'gkabitakis@gmail.com'
   api_key: NPM_API_TOKEN
+  skip_cleanup: true
