@@ -27,7 +27,7 @@
 		"fast-deep-equal": "^3.1.1",
 		"flat": "^5.0.0",
 		"kareem": "~2.3.1",
-		"mongodb": "^3.5.4"
+		"mongodb": "^3.5.5"
 	},
 	"devDependencies": {
 		"@shelf/jest-mongodb": "^1.1.3",
