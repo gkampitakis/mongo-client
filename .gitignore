@@ -4,3 +4,4 @@ lib
 .node-dev.json
 .vscode
 coverage
+package-lock.json

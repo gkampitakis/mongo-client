@@ -192,6 +192,6 @@ interface ExtendableObject {
 /**
  *  ------------ BACKLOG ------------
  *  //TODO: optimize methods
- * 
- * 
+ *
+ *
  */
