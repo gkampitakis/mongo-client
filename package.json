@@ -48,7 +48,7 @@
 		"jest-sonar-reporter": "^2.0.0",
 		"mongodb-memory-server": "^6.3.2",
 		"mongoose": "^5.9.3",
-		"pino": "^5.17.0",
+		"pino": "^6.1.0",
 		"pino-pretty": "^3.6.1",
 		"prettier": "^1.19.1",
 		"rimraf": "^3.0.2",
