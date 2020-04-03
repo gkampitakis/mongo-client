@@ -1,3 +1,15 @@
+# [1.1.0](https://github.com/gkampitakis/MongoDriver/compare/v1.0.0...v1.1.0) (2020-04-03)
+
+
+### Bug Fixes
+
+* **semantic:** trying to set up semantit ([94a68d4](https://github.com/gkampitakis/MongoDriver/commit/94a68d4d0560aeb3087a62ef6359e811b799be97))
+
+
+### Features
+
+* **test:** testing semantic release ([4a35071](https://github.com/gkampitakis/MongoDriver/commit/4a350717c13bbf31dd056f1036bb156ba5d67ba0))
+
 ## [1.0.1](https://github.com/gkampitakis/MongoDriver/compare/v1.0.0...v1.0.1) (2020-04-03)
 
 ### Bug Fixes
