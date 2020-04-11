@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/gkampitakis/MongoDriver/compare/v1.1.0...v1.2.0) (2020-04-11)
+
+
+### Features
+
+* expose mongo client ([065d2d6](https://github.com/gkampitakis/MongoDriver/commit/065d2d6b4227299c08a4c9aa9104a41415b5a351))
+
 # [1.1.0](https://github.com/gkampitakis/MongoDriver/compare/v1.0.0...v1.1.0) (2020-04-03)
 
 
