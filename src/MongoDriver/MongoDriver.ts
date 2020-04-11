@@ -4,7 +4,7 @@ import { MongoInstance } from '../MongoInstance/MongoInstance';
 // eslint-disable-next-line @typescript-eslint/class-name-casing
 class _MongoDriver {
 	private db: Db | undefined;
-	private client: MongoClient | undefined;
+	public client: MongoClient | undefined;
 	private static instance: _MongoDriver;
 
 	public static getInstance(): _MongoDriver {
