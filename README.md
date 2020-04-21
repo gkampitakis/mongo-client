@@ -1,9 +1,13 @@
-# Mongo Driver Typescript
+# Mongo Client Typescript
 
 [![Build Status](https://travis-ci.org/gkampitakis/MongoDriver.svg?branch=master)](https://travis-ci.org/gkampitakis/MongoDriver)
 [![Coverage Status](https://coveralls.io/repos/github/gkampitakis/MongoDriver/badge.svg?branch=master)](https://coveralls.io/github/gkampitakis/MongoDriver?branch=master)
 
 The purpose of this module is to provide a wrapper for using mongodb functions easier and provide a straightforward way of supporting schema validation.
+
+## Changelog
+
+[Changelod.md](https://github.com/gkampitakis/MongoDriver/blob/master/CHANGELOG.md)
 
 ## Dependencies
 
@@ -17,16 +21,16 @@ The purpose of this module is to provide a wrapper for using mongodb functions e
 
 First install [Node.js](https://nodejs.org/en/). Then:
 
-`npm i @gkampitakis/mongo-driver --save`
+`npm i @gkampitakis/mongo-client --save`
 
 ## Importing
 
 ```javascript
 // Using Node.js `require()`
-const { mongoDriver } = require('@gkampitakis/mongo-driver');
+const { mongoClient } = require('@gkampitakis/mongo-client');
 
 //Using ES6 import
-import { mongoDriver } from '@gkampitakis/mongo-driver';
+import { mongoClient } from '@gkampitakis/mongo-client';
 ```
 
 ## Overview
@@ -34,7 +38,7 @@ import { mongoDriver } from '@gkampitakis/mongo-driver';
 **Connecting to MongoDB**
 
 ```javascript
-await mongoDriver.connect('mongodb://localhost:27017', 'databaseName', {
+await mongoClient.connect('mongodb://localhost:27017', 'databaseName', {
 	useNewUrlParser: true,
 	useUnifiedTopology: true
 });
@@ -168,4 +172,4 @@ schema.post('save', function() {});
 
 -   `npm run test` Run Jest testing suite.
 
--   `npm run benchmarks` Run benchmark suite for **Mongo Driver**, **Mongoose** and **Native MongoDb for Nodejs**.
+-   `npm run benchmarks` Run benchmark suite for **Mongo Client**, **Mongoose** and **Native MongoDb for Nodejs**.
