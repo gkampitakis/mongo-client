@@ -18,7 +18,7 @@ describe('MongoInstance', () => {
 	it('Should throw an error if the database is not initialized', () => {
 		const test = new Test('testCollection');
 
-		expect(() => test.getCollectionTest()).toThrowError('MongoDriver not correctly initialized');
+		expect(() => test.getCollectionTest()).toThrowError('MongoClient not correctly initialized');
 	});
 
 	it('Should return the collection', async done => {

@@ -12,7 +12,7 @@ const MongoMemoryServer = require('mongodb-memory-server').MongoMemoryServer,
 		saveBenchmarkWithHooks,
 		updateOneBenchmark,
 		updateOneBenchmarkWithHooks
-	} = require('./mongoDriver'),
+	} = require('./mongoClient'),
 	{
 		setupDatabase: setupNative,
 		insertBenchmark: insertNative,
@@ -49,7 +49,7 @@ async function Main() {
 		await setupDatabases();
 		logger.info('Databases are initialized');
 
-		await MongoDriverBenchmarks();
+		await MongoClientBenchmarks();
 
 		await MongoNativeBenchmarks();
 
@@ -74,8 +74,8 @@ async function setupDatabases() {
 	return Promise.all(promises);
 }
 
-async function MongoDriverBenchmarks() {
-	return benchmarkFunction('MongoDriver', async registerTimer => {
+async function MongoClientBenchmarks() {
+	return benchmarkFunction('MongoClient', async registerTimer => {
 		await createBenchmark(INSERTS);
 		registerTimer('createBenchmark');
 		await createBenchmarkWithHooks(INSERTS);

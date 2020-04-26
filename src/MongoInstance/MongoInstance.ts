@@ -16,7 +16,7 @@ export abstract class MongoInstance {
 	}
 
 	protected get collection(): Collection {
-		if (!MongoInstance.database) throw new Error('MongoDriver not correctly initialized');
+		if (!MongoInstance.database) throw new Error('MongoClient not correctly initialized');
 
 		return MongoInstance.database.collection(this._collectionName);
 	}

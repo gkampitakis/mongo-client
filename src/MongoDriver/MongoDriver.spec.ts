@@ -1,9 +1,9 @@
-import { MongoDriver } from './MongoDriver';
+import { MongoClient } from './MongoDriver';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 
 jest.mock('../MongoInstance/MongoInstance');
 
-describe('MongoDriver', () => {
+describe('MongoClient', () => {
 	const MongoInstanceMock = jest.requireMock('../MongoInstance/MongoInstance').MongoInstance;
 
 	beforeEach(() => {
@@ -16,7 +16,7 @@ describe('MongoDriver', () => {
 				mongoURI = await mongod.getUri(),
 				dbName = await mongod.getDbName();
 
-			MongoDriver.connect(mongoURI, dbName).then(async () => {
+			MongoClient.connect(mongoURI, dbName).then(async () => {
 				expect(MongoInstanceMock.SetDbSpy).toHaveBeenCalledTimes(1);
 
 				await mongod.stop();

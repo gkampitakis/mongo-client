@@ -1,10 +1,10 @@
-import mongodb, { Db, MongoClient, MongoClientOptions } from 'mongodb';
+import mongodb, { MongoClient as Client, Db, MongoClientOptions } from 'mongodb';
 import { MongoInstance } from '../MongoInstance/MongoInstance';
 
 // eslint-disable-next-line @typescript-eslint/class-name-casing
 class _MongoDriver {
 	private db: Db | undefined;
-	public client: MongoClient | undefined;
+	public client: Client | undefined;
 	private static instance: _MongoDriver;
 
 	public static getInstance(): _MongoDriver {
@@ -16,7 +16,7 @@ class _MongoDriver {
 	}
 
 	public connect(uri: string, database: string, options?: MongoClientOptions) {
-		return mongodb.connect(uri, options).then(async (client: MongoClient) => {
+		return mongodb.connect(uri, options).then(async (client: Client) => {
 			this.db = client.db(database);
 			this.client = client;
 
@@ -27,4 +27,4 @@ class _MongoDriver {
 	}
 }
 
-export const MongoDriver = _MongoDriver.getInstance();
+export const MongoClient = _MongoDriver.getInstance();

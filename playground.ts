@@ -1,4 +1,4 @@
-import { MongoDriver } from './index';
+import { MongoClient } from './index';
 import pino from 'pino';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import {
@@ -22,7 +22,7 @@ const logger = pino({
 	mongodb = new MongoMemoryServer();
 
 function setupDatabase(uri: string, database: string) {
-	return MongoDriver.connect(uri, database, {
+	return MongoClient.connect(uri, database, {
 		useNewUrlParser: true,
 		useUnifiedTopology: true
 	});

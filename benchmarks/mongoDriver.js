@@ -1,11 +1,11 @@
 'use strict';
 
-const mongoDriver = require('../lib/index').MongoDriver,
+const mongoClient = require('../lib/index').MongoClient,
 	Model = require('../lib/index').Model,
 	Schema = require('../lib/index').Schema;
 
 async function setupDatabase(uri, databaseName) {
-	return mongoDriver.connect(uri, databaseName, {
+	return mongoClient.connect(uri, databaseName, {
 		useNewUrlParser: true,
 		useUnifiedTopology: true
 	});
@@ -13,7 +13,7 @@ async function setupDatabase(uri, databaseName) {
 
 async function saveBenchmark(number) {
 	const promises = [],
-		model = Model('mongoDriver');
+		model = Model('mongoClient');
 
 	for (let i = 0; i < number; i++) {
 		const doc = model.instance({ data: i });
@@ -27,7 +27,7 @@ async function saveBenchmark(number) {
 async function saveBenchmarkWithHooks(number) {
 	const promises = [],
 		schema = new Schema(),
-		model = Model('mongoDriverHooks', schema);
+		model = Model('mongoClientHooks', schema);
 
 	let counter = 0;
 
@@ -49,7 +49,7 @@ async function saveBenchmarkWithHooks(number) {
 
 async function createBenchmark(number) {
 	const promises = [],
-		model = Model('mongoDriver');
+		model = Model('mongoClient');
 
 	for (let i = 0; i < number; i++) {
 		promises.push(model.create({ data: i }));
@@ -61,7 +61,7 @@ async function createBenchmark(number) {
 async function createBenchmarkWithHooks(number) {
 	const promises = [],
 		schema = new Schema(),
-		model = Model('mongoDriverHooks', schema);
+		model = Model('mongoClientHooks', schema);
 
 	let counter = 0;
 
@@ -82,7 +82,7 @@ async function createBenchmarkWithHooks(number) {
 
 async function deleteOneBenchmark(number) {
 	const promises = [],
-		model = Model('mongoDriver');
+		model = Model('mongoClient');
 
 	for (let i = 0; i < number; i++) {
 		promises.push(model.deleteOne({}));
@@ -94,7 +94,7 @@ async function deleteOneBenchmark(number) {
 async function deleteOneBenchmarkWithHooks(number) {
 	const promises = [],
 		schema = new Schema(),
-		model = Model('mongoDriverHooks', schema);
+		model = Model('mongoClientHooks', schema);
 
 	let counter = 0;
 
@@ -115,7 +115,7 @@ async function deleteOneBenchmarkWithHooks(number) {
 
 async function findOneBenchmark(number) {
 	const promises = [],
-		model = Model('mongoDriver');
+		model = Model('mongoClient');
 
 	for (let i = 0; i < number; i++) {
 		promises.push(model.findOne({}));
@@ -126,7 +126,7 @@ async function findOneBenchmark(number) {
 
 async function updateOneBenchmark(number) {
 	const promises = [],
-		model = Model('mongoDriver');
+		model = Model('mongoClient');
 
 	for (let i = 0; i < number; i++) {
 		promises.push(model.updateOne({}, { newData: 'data' }));
@@ -138,7 +138,7 @@ async function updateOneBenchmark(number) {
 async function updateOneBenchmarkWithHooks(number) {
 	const promises = [],
 		schema = new Schema(),
-		model = Model('mongoDriverHooks', schema);
+		model = Model('mongoClientHooks', schema);
 
 	let counter = 0;
 
