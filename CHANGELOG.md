@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/gkampitakis/MongoDriver/compare/v1.2.0...v1.2.1) (2020-04-26)
+
+
+### Bug Fixes
+
+* update naming inconsistencies ([ac6a77c](https://github.com/gkampitakis/MongoDriver/commit/ac6a77c4fa21a6a02eff8f9dfbc23710af43c99c))
+
 # [1.2.0](https://github.com/gkampitakis/MongoDriver/compare/v1.1.0...v1.2.0) (2020-04-11)
 
 
