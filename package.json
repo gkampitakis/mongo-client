@@ -1,6 +1,6 @@
 {
 	"name": "@gkampitakis/mongo-client",
-	"version": "1.2.1",
+	"version": "1.2.2",
 	"description": "A module for node.js connecting mongodb",
 	"main": "lib/index.js",
 	"types": "lib/index.d.ts",
