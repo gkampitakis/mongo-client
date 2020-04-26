@@ -1,7 +1,6 @@
 # Mongo Client Typescript
 
 [![Build Status](https://travis-ci.org/gkampitakis/MongoDriver.svg?branch=master)](https://travis-ci.org/gkampitakis/MongoDriver)
-[![Coverage Status](https://coveralls.io/repos/github/gkampitakis/MongoDriver/badge.svg?branch=master)](https://coveralls.io/github/gkampitakis/MongoDriver?branch=master)
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 
 The purpose of this module is to provide a wrapper for using mongodb functions easier and provide a straightforward way of supporting schema validation.
@@ -174,3 +173,9 @@ schema.post('save', function() {});
 -   `npm run test` Run Jest testing suite.
 
 -   `npm run benchmarks` Run benchmark suite for **Mongo Client**, **Mongoose** and **Native MongoDb for Nodejs**.
+
+## Author and Maintainer
+
+[Georgios Kampitakis](https://github.com/gkampitakis)
+
+For any [issues](https://github.com/gkampitakis/mongodriver/issues).

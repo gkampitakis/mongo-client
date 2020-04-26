@@ -157,7 +157,24 @@ class InternalModel extends MongoInstance {
 	}
 
 	private async collectionExists(collectionName: string) {
+		if (!InternalModel.database) await this.checkConnection();
 		return await InternalModel.database.listCollections({ name: collectionName }).hasNext();
+	}
+
+	private checkConnection(): Promise<boolean> {
+		return new Promise(resolve => {
+			let retries = 0;
+			const timer = setInterval(() => {
+				retries++;
+				if (InternalModel.database) {
+					resolve(true);
+					clearInterval(timer);
+				}
+				if (retries === 30) {
+					clearInterval(timer);
+				}
+			}, 1005);
+		});
 	}
 }
 

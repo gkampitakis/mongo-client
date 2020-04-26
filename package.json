@@ -14,7 +14,6 @@
 		"clean": "rimraf ./lib ./coverage",
 		"prepublishOnly": "npm run build",
 		"benchmarks": "npm run build && node ./benchmarks/index.js",
-		"coveralls": "jest --coverage && cat ./coverage/lcov.info | coveralls",
 		"release": "semantic-release"
 	},
 	"keywords": [

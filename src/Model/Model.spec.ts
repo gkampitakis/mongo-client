@@ -17,7 +17,7 @@ describe('Model', () => {
 		SchemaMock = jest.requireMock('../Schema/Schema').Schema,
 		MongoInstanceMock = jest.requireMock('../MongoInstance/MongoInstance').MongoInstance;
 
-	let mongod: MongoMemoryServer;
+	let mongod: MongoMemoryServer, ClientConnection;
 
 	beforeAll(async done => {
 		mongod = new MongoMemoryServer();
@@ -26,7 +26,7 @@ describe('Model', () => {
 			dbName = await mongod.getDbName();
 
 		mongodb.connect(mongoURI, { useUnifiedTopology: true }).then((client: MongoClient) => {
-			MongoInstanceMock.database = client.db(dbName);
+			ClientConnection = client.db(dbName);
 			done();
 		});
 	});
@@ -58,6 +58,7 @@ describe('Model', () => {
 
 		SchemaMock.schemaDefinition = {};
 		SchemaMock.HasHooks = true;
+		MongoInstanceMock.database = ClientConnection;
 	});
 
 	describe('Constructor', () => {
@@ -90,6 +91,22 @@ describe('Model', () => {
 				expect(ExtractUniqueValuesSpy).toHaveBeenCalledTimes(0);
 				done();
 			}, 1000);
+		});
+
+		it('Should call setInterval if no connection established and then resolve', done => {
+			MongoInstanceMock.database = undefined;
+
+			const SetIntervalSpy = jest.spyOn(window, 'setInterval'),
+				ClearIntervalSpy = jest.spyOn(window, 'clearInterval');
+			Model('noSchema', new Schema());
+
+			expect(SetIntervalSpy).toHaveBeenCalled();
+			MongoInstanceMock.database = ClientConnection;
+
+			setTimeout(() => {
+				expect(ClearIntervalSpy).toHaveBeenCalledTimes(1);
+				done();
+			}, 1500);
 		});
 	});
 
