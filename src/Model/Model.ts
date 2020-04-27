@@ -1,5 +1,5 @@
 import { extractUniqueValues, objectEquality, objectID } from '../Utils/Utils';
-import { DeleteWriteOpResultObject, FilterQuery } from 'mongodb';
+import { Cursor, DeleteWriteOpResultObject, FilterQuery, FindOneOptions } from 'mongodb';
 import { Schema } from '../Schema/Schema';
 import { MongoInstance } from '../MongoInstance/MongoInstance';
 import { Document } from '../Document/Document';
@@ -40,6 +40,10 @@ class InternalModel extends MongoInstance {
 
 	public findByIdAndUpdate(id: string, update: object, lean = false): Promise<any> {
 		return this.updateOne({ _id: id }, update, lean);
+	}
+
+	public find(filter: object, options?: FindOneOptions): Cursor<any> {
+		return this.collection.find(filter, options);
 	}
 
 	public updateOne(filter: object, update: object, lean = false): Promise<any> {
@@ -198,6 +202,7 @@ export type Model = {
 	findById(id: string, lean?: true): Promise<ExtendableObject>;
 	findOne(query: object, lean?: false): Promise<Document>;
 	findOne(query: object, lean?: true): Promise<ExtendableObject>;
+	find(query: object, options?: FindOneOptions): Cursor<any>;
 	deleteOne(filter: object, lean?: boolean): Promise<DeleteWriteOpResultObject | null>;
 	findByIdAndDelete(id: string, lean?: boolean): Promise<DeleteWriteOpResultObject | null>;
 };

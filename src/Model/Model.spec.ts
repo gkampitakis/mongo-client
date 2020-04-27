@@ -55,6 +55,7 @@ describe('Model', () => {
 		MongoInstanceMock.UpdateOneSpy.mockClear();
 		MongoInstanceMock.FindOneSpy.mockClear();
 		MongoInstanceMock.DeleteOneSpy.mockClear();
+		MongoInstanceMock.FindSpy.mockClear();
 
 		SchemaMock.schemaDefinition = {};
 		SchemaMock.HasHooks = true;
@@ -556,6 +557,16 @@ describe('Model', () => {
 			await model.findByIdAndUpdate('1233131', {});
 
 			expect(UpdateOneSpy).toHaveBeenNthCalledWith(1, { _id: '1233131' }, {}, false);
+		});
+	});
+
+	describe('Method find', () => {
+		it('Should call the native find method', async () => {
+			const model = Model('test');
+
+			await model.find({}, {});
+
+			expect(MongoInstanceMock.FindSpy).toHaveBeenNthCalledWith(1, {}, {});
 		});
 	});
 });

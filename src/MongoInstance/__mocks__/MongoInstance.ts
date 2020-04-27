@@ -13,6 +13,7 @@ export abstract class MongoInstance {
 	public static DeleteOneSpy = jest.fn();
 	public static SetDbSpy = jest.fn();
 	public static CreateIndexSpy = jest.fn();
+	public static FindSpy = jest.fn();
 
 	public static GetCollectionNameSpy = jest.fn();
 	public static GetCollectionSpy = jest.fn();
@@ -73,6 +74,10 @@ export abstract class MongoInstance {
 			createIndex: (value: any, index: any) => {
 				MongoInstance.CreateIndexSpy(value, index);
 				return MongoInstance.database.collection(this._collectionName).createIndex(value, index);
+			},
+			find: (query: any, options: any) => {
+				MongoInstance.FindSpy(query, options);
+				return MongoInstance.database.collection(this._collectionName).find(query, options);
 			}
 		};
 	}
