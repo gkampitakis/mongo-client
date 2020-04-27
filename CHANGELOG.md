@@ -1,3 +1,16 @@
+# [1.3.0](https://github.com/gkampitakis/MongoDriver/compare/v1.2.0...v1.3.0) (2020-04-27)
+
+
+### Bug Fixes
+
+* bug with model not waiting connection to establish ([bec106c](https://github.com/gkampitakis/MongoDriver/commit/bec106c248306f2ae5ef818c86e01f0ea8cc8d1a))
+* update naming inconsistencies ([ac6a77c](https://github.com/gkampitakis/MongoDriver/commit/ac6a77c4fa21a6a02eff8f9dfbc23710af43c99c))
+
+
+### Features
+
+* implement missing find method and add missing mongodb types ([9c210b3](https://github.com/gkampitakis/MongoDriver/commit/9c210b3030fa819e213a1b30970094b2b4e2d845))
+
 ## [1.2.2](https://github.com/gkampitakis/MongoDriver/compare/v1.2.1...v1.2.2) (2020-04-27)
 
 ### Bug Fixes
