@@ -32,10 +32,6 @@ class _Document extends MongoInstance {
 		});
 	};
 
-	// public populate(): Promise<Document> {//TODO: implement
-
-	// }
-
 	public save = async (): Promise<Document> => {
 		return new Promise(async (resolve, reject) => {
 			try {
@@ -89,9 +85,3 @@ export type Document<data = any> = {
 	schema: SchemaDefinition | undefined;
 	collectionName: string;
 };
-
-/**
- *  ------------ BACKLOG ------------
- *
- *
- */

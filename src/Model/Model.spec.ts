@@ -19,7 +19,7 @@ describe('Model', () => {
 
 	let mongod: MongoMemoryServer, ClientConnection;
 
-	beforeAll(async done => {
+	beforeAll(async (done) => {
 		mongod = new MongoMemoryServer();
 
 		const mongoURI = await mongod.getUri(),
@@ -31,7 +31,7 @@ describe('Model', () => {
 		});
 	});
 
-	afterAll(async done => {
+	afterAll(async (done) => {
 		await mongod.stop();
 
 		done();
@@ -63,7 +63,7 @@ describe('Model', () => {
 	});
 
 	describe('Constructor', () => {
-		it("Should call the prepare collection if it's the 1st time", done => {
+		it("Should call the prepare collection if it's the 1st time", (done) => {
 			const schema = new Schema();
 
 			Model('test', schema);
@@ -74,7 +74,7 @@ describe('Model', () => {
 			}, 1000);
 		});
 
-		it('Should not call again the prepare collection for same collection', done => {
+		it('Should not call again the prepare collection for same collection', (done) => {
 			const schema = new Schema();
 
 			Model('test', schema);
@@ -83,7 +83,7 @@ describe('Model', () => {
 			done();
 		});
 
-		it('Should not call the prepare collection if no schema is given', done => {
+		it('Should not call the prepare collection if no schema is given', (done) => {
 			SchemaMock.schemaDefinition = undefined;
 
 			Model('noSchema', new Schema());
@@ -94,7 +94,7 @@ describe('Model', () => {
 			}, 1000);
 		});
 
-		it('Should call setInterval if no connection established and then resolve', done => {
+		it('Should call setInterval if no connection established and then resolve', (done) => {
 			MongoInstanceMock.database = undefined;
 
 			const SetIntervalSpy = jest.spyOn(window, 'setInterval'),
@@ -108,6 +108,24 @@ describe('Model', () => {
 				expect(ClearIntervalSpy).toHaveBeenCalledTimes(1);
 				done();
 			}, 1500);
+		});
+
+		it('Should call clearInterval after some period', () => {
+			MongoInstanceMock.database = undefined;
+
+			jest.useFakeTimers();
+
+			const SetIntervalSpy = jest.spyOn(window, 'setInterval'),
+				ClearIntervalSpy = jest.spyOn(window, 'clearInterval');
+
+			Model('testSchema', new Schema());
+
+			jest.advanceTimersByTime(35000);
+
+			expect(ClearIntervalSpy).toHaveBeenCalledTimes(1);
+			expect(SetIntervalSpy).toHaveBeenCalledTimes(1);
+
+			jest.useRealTimers();
 		});
 	});
 
@@ -144,7 +162,7 @@ describe('Model', () => {
 			const schema = new Schema(),
 				testModel = Model('wrappedTest', schema),
 				data = { test: 'Data' },
-				document = await testModel.create(data, true);
+				document = await testModel.create(data, { lean: true });
 
 			expect(document).not.toBeInstanceOf(Document);
 			expect(document).toEqual(data);
@@ -227,7 +245,7 @@ describe('Model', () => {
 			const schema = new Schema(),
 				testModel = Model('test2', schema);
 
-			const doc = await testModel.create({ test: 'test' }, true);
+			const doc = await testModel.create({ test: 'test' }, { lean: true });
 
 			const result = await testModel.updateOne({ _id: doc._id }, {});
 
@@ -241,7 +259,7 @@ describe('Model', () => {
 				testModel = Model('test2', schema),
 				data = { test: 'test' },
 				updatedData = { test: 'test2' };
-			const doc = await testModel.create(data, true);
+			const doc = await testModel.create(data, { lean: true });
 
 			const result = await testModel.updateOne({ _id: doc._id }, updatedData);
 
@@ -261,7 +279,7 @@ describe('Model', () => {
 			const testModel = Model('NoSchema'),
 				data = { test: 'test' },
 				updatedData = { test: { test: 'test' } };
-			const result = await testModel.create(data, true);
+			const result = await testModel.create(data, { lean: true });
 			SchemaMock.ValidateSpy.mockClear();
 			await testModel.updateOne({ _id: result._id }, updatedData);
 			expect(SchemaMock.ValidateSpy).toHaveBeenCalledTimes(0);
@@ -288,7 +306,7 @@ describe('Model', () => {
 					data = { test: 'test' },
 					updatedData = { test: { test: 'test' } };
 
-				const doc = await testModel.create(data, true);
+				const doc = await testModel.create(data, { lean: true });
 
 				SchemaMock.ExecutePostHooksSpy.mockClear();
 				SchemaMock.ExecutePreHooksSpy.mockClear();
@@ -325,7 +343,7 @@ describe('Model', () => {
 					data = { test: 'test' },
 					updatedData = { test: { test: 'test' } };
 
-				const doc = await testModel.create(data, true);
+				const doc = await testModel.create(data, { lean: true });
 
 				SchemaMock.ExecutePostHooksSpy.mockClear();
 				SchemaMock.ExecutePreHooksSpy.mockClear();
@@ -362,7 +380,7 @@ describe('Model', () => {
 					data = { test: 'test' },
 					updatedData = { test: { test: 'test' } };
 
-				const doc = await testModel.create(data, true);
+				const doc = await testModel.create(data, { lean: true });
 
 				SchemaMock.ExecutePostHooksSpy.mockClear();
 				SchemaMock.ExecutePreHooksSpy.mockClear();
@@ -389,7 +407,7 @@ describe('Model', () => {
 				{
 					_id: '5e4acf03d8e9435b2a2640ae'
 				},
-				false
+				undefined
 			);
 		});
 	});
@@ -435,7 +453,7 @@ describe('Model', () => {
 			const result = await testModel.create(data);
 			DocumentSpy.mockClear();
 
-			const doc = await testModel.findOne({ _id: result.data._id }, true);
+			const doc = await testModel.findOne({ _id: result.data._id }, { lean: true });
 
 			expect(DocumentSpy).toHaveBeenCalledTimes(0);
 			expect(doc).toEqual({ ...data, _id: result.data._id });
@@ -460,12 +478,12 @@ describe('Model', () => {
 			const schema = new Schema(),
 				testModel = Model('test6', schema);
 
-			const doc = await testModel.create({ field: 'test' }, true);
+			const doc = await testModel.create({ field: 'test' }, { lean: true });
 
 			SchemaMock.ExecutePreHooksSpy.mockClear();
 			SchemaMock.ExecutePostHooksSpy.mockClear();
 
-			await testModel.deleteOne({ _id: doc._id }, true);
+			await testModel.deleteOne({ _id: doc._id }, { lean: true });
 
 			expect(SchemaMock.ExecutePreHooksSpy).toHaveBeenNthCalledWith(
 				1,
@@ -486,12 +504,12 @@ describe('Model', () => {
 			const schema = new Schema(),
 				testModel = Model('test6', schema);
 
-			const doc = await testModel.create({ field: 'test' }, true);
+			const doc = await testModel.create({ field: 'test' }, { lean: true });
 
 			SchemaMock.ExecutePreHooksSpy.mockClear();
 			SchemaMock.ExecutePostHooksSpy.mockClear();
 
-			await testModel.deleteOne({ _id: doc._id }, false);
+			await testModel.deleteOne({ _id: doc._id }, { lean: false });
 			expect(SchemaMock.ExecutePreHooksSpy).toHaveBeenNthCalledWith(
 				1,
 				'delete',
@@ -511,7 +529,7 @@ describe('Model', () => {
 			const schema = new Schema(),
 				testModel = Model('test6', schema);
 
-			const result = await testModel.deleteOne({ _id: '5e4acf03d8e9435b2a2640ae' }, false);
+			const result = await testModel.deleteOne({ _id: '5e4acf03d8e9435b2a2640ae' }, { lean: false });
 
 			expect(result).toBeNull();
 		});
@@ -523,12 +541,12 @@ describe('Model', () => {
 
 				SchemaMock.HasHooks = false;
 
-				const doc = await testModel.create({ field: 'test' }, true);
+				const doc = await testModel.create({ field: 'test' }, { lean: true });
 
 				SchemaMock.ExecutePreHooksSpy.mockClear();
 				SchemaMock.ExecutePostHooksSpy.mockClear();
 
-				await testModel.deleteOne({ _id: doc._id }, false);
+				await testModel.deleteOne({ _id: doc._id }, { lean: false });
 				expect(SchemaMock.ExecutePreHooksSpy).not.toHaveBeenCalled();
 				expect(SchemaMock.ExecutePostHooksSpy).not.toHaveBeenCalled();
 				expect(MongoInstanceMock.DeleteOneSpy).toHaveBeenNthCalledWith(1, { _id: doc._id });
@@ -538,7 +556,7 @@ describe('Model', () => {
 	describe('Method findByIdAndDelete', () => {
 		it('Should call the deleteOne method', async () => {
 			const model = Model('test'),
-				doc = await model.create({ field: 'test' }, true),
+				doc = await model.create({ field: 'test' }, { lean: true }),
 				DeleteOneSpy = jest.spyOn(model, 'deleteOne');
 
 			SchemaMock.ExecutePreHooksSpy.mockClear();
@@ -546,7 +564,7 @@ describe('Model', () => {
 
 			await model.findByIdAndDelete(doc._id);
 
-			expect(DeleteOneSpy).toHaveBeenNthCalledWith(1, { _id: doc._id }, false);
+			expect(DeleteOneSpy).toHaveBeenNthCalledWith(1, { _id: doc._id }, undefined);
 		});
 	});
 	describe('Method findByIdAndUpdate', () => {

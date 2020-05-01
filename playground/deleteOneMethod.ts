@@ -10,19 +10,19 @@ export async function deleteOneMethod(execute = false) {
 	const schema = new Schema(),
 		model = Model('deleteMethod', schema);
 
-	schema.pre('delete', function() {
+	schema.pre('delete', function () {
 		console.log(this, '[Pre Delete Hook]');
 	});
 
-	schema.post('delete', function() {
+	schema.post('delete', function () {
 		console.log(this, '[Post Delete Hook]');
 	});
 
-	const doc = await model.create({ username: 'george' }, true);
+	const doc = await model.create({ username: 'george' }, { lean: true });
 
 	logger.info(doc, '[Created Doc]');
 
-	const { result } = await model.deleteOne({ username: 'george' }, true);
+	const { result } = await model.deleteOne({ username: 'george' }, { lean: true });
 
 	logger.info(result, '[Delete Results]');
 

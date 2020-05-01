@@ -9,20 +9,20 @@ export async function findOneMethod(execute = false) {
 	logger.info('Start findOneMethod functionality');
 
 	const schema = new Schema({
-		type: 'object',
-		properties: {
-			name: {
-				type: 'string'
+			type: 'object',
+			properties: {
+				name: {
+					type: 'string'
+				},
+				email: {
+					type: 'string'
+				},
+				age: {
+					type: 'integer'
+				}
 			},
-			email: {
-				type: 'string'
-			},
-			age: {
-				type: 'integer'
-			}
-		},
-		required: ['name', 'email']
-	}),
+			required: ['name', 'email']
+		}),
 		userModel = Model('user', schema);
 
 	const georgeUser = await userModel.create({ name: 'George', email: 'test' });
@@ -35,7 +35,7 @@ export async function findOneMethod(execute = false) {
 
 	console.log(result);
 
-	const object = await userModel.findOne({ name: 'George' }, true);
+	const object = await userModel.findOne({ name: 'George' }, { lean: true });
 
 	console.log(object);
 

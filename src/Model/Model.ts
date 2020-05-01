@@ -1,5 +1,12 @@
 import { extractUniqueValues, objectEquality, objectID } from '../Utils/Utils';
-import { Cursor, DeleteWriteOpResultObject, FilterQuery, FindOneOptions } from 'mongodb';
+import {
+	CollectionInsertOneOptions,
+	CommonOptions,
+	Cursor,
+	DeleteWriteOpResultObject,
+	FilterQuery,
+	FindOneOptions
+} from 'mongodb';
 import { Schema } from '../Schema/Schema';
 import { MongoInstance } from '../MongoInstance/MongoInstance';
 import { Document } from '../Document/Document';
@@ -12,10 +19,14 @@ class InternalModel extends MongoInstance {
 		if (schema?.schemaDefinition) this.prepareCollection(collectionName, schema!.schemaDefinition);
 	}
 
-	public findOne(query: object, lean?: boolean): Promise<any> {
+	public findOne(
+		query: FilterQuery<any>,
+		options: FindOneOptions & { lean?: boolean } = { lean: false }
+	): Promise<any> {
 		return new Promise(async (resolve, reject) => {
 			try {
-				const result = await this.collection.findOne(query);
+				const { lean, ...rest } = options;
+				const result = await this.collection.findOne(query, rest);
 
 				if (!result) return resolve(null);
 
@@ -30,26 +41,29 @@ class InternalModel extends MongoInstance {
 		});
 	}
 
-	public findById(id: string, lean = false): Promise<any> {
-		return this.findOne({ _id: id }, lean);
+	public findById(id: string, options?: FindOneOptions & { lean?: boolean }): Promise<any> {
+		return this.findOne({ _id: id }, options);
 	}
 
-	public findByIdAndDelete(id: string, lean = false): Promise<any> {
-		return this.deleteOne({ _id: id }, lean);
+	public findByIdAndDelete(
+		id: string,
+		options?: CommonOptions & { bypassDocumentValidation?: boolean; lean: boolean }
+	): Promise<any> {
+		return this.deleteOne({ _id: id }, options);
 	}
 
 	public findByIdAndUpdate(id: string, update: object, lean = false): Promise<any> {
 		return this.updateOne({ _id: id }, update, lean);
 	}
 
-	public find(filter: object, options?: FindOneOptions): Cursor<any> {
+	public find(filter: FilterQuery<any>, options?: FindOneOptions): Cursor<any> {
 		return this.collection.find(filter, options);
 	}
 
-	public updateOne(filter: object, update: object, lean = false): Promise<any> {
+	public updateOne(filter: FilterQuery<any>, update: object, lean = false): Promise<any> {
 		return new Promise(async (resolve, reject) => {
 			try {
-				const document = await this.findOne(filter, true);
+				const document = await this.findOne(filter, { lean: true });
 
 				if (!document) return resolve(null);
 
@@ -80,10 +94,10 @@ class InternalModel extends MongoInstance {
 		});
 	}
 
-	public deleteMany(filter: FilterQuery<object>) {
+	public deleteMany(filter: FilterQuery<object>, options?: CommonOptions) {
 		return new Promise(async (resolve, reject) => {
 			try {
-				await this.collection.deleteMany(filter);
+				await this.collection.deleteMany(filter, options);
 
 				resolve();
 			} catch (error) {
@@ -92,22 +106,29 @@ class InternalModel extends MongoInstance {
 		});
 	}
 
-	public deleteOne(filter: object, lean = false): Promise<DeleteWriteOpResultObject | null> {
-		if (this._schema?.hasPreHooks || this._schema?.hasPostHooks) return this.deleteOneWithHooks(filter, lean);
-		return this.deleteOneWithoutHooks(filter);
+	public deleteOne(
+		filter: FilterQuery<any>,
+		options?: CommonOptions & { bypassDocumentValidation?: boolean; lean: boolean }
+	): Promise<DeleteWriteOpResultObject | null> {
+		if (this._schema?.hasPreHooks || this._schema?.hasPostHooks) return this.deleteOneWithHooks(filter, options);
+		return this.deleteOneWithoutHooks(filter, options);
 	}
 
-	private deleteOneWithHooks(filter: object, lean = false): Promise<DeleteWriteOpResultObject | null> {
-		return new Promise(async resolve => {
-			const document = await this.collection.findOne(filter);
+	private deleteOneWithHooks(
+		filter: object,
+		options: CommonOptions & { bypassDocumentValidation?: boolean; lean: boolean } = { lean: false }
+	): Promise<DeleteWriteOpResultObject | null> {
+		return new Promise(async (resolve) => {
+			const document = await this.collection.findOne(filter),
+				{ lean, ...rest } = options;
 
 			if (!document) return resolve(null);
 
-			const wrappedDoc = lean ? document : Document(this.collectionName, document, this._schema);
+			const wrappedDoc = options?.lean ? document : Document(this.collectionName, document, this._schema);
 
 			await this._schema?.executePreHooks('delete', wrappedDoc, lean);
 
-			const result = this.collection.deleteOne(filter);
+			const result = this.collection.deleteOne(filter, rest);
 
 			await this._schema?.executePostHooks('delete', wrappedDoc, lean);
 
@@ -115,18 +136,27 @@ class InternalModel extends MongoInstance {
 		});
 	}
 
-	private deleteOneWithoutHooks(filter: object): Promise<DeleteWriteOpResultObject | null> {
-		return this.collection.deleteOne(filter);
+	private deleteOneWithoutHooks(
+		filter: object,
+		options: CommonOptions & { bypassDocumentValidation?: boolean; lean: boolean } = { lean: false }
+	): Promise<DeleteWriteOpResultObject | null> {
+		const { lean, ...rest } = options;
+		return this.collection.deleteOne(filter, rest);
 	}
 
 	public instance<Generic extends ExtendableObject>(data: Generic): Document<Generic & ExtendableObject> {
 		return Document<Generic & ExtendableObject>(this.collectionName, data, this._schema);
 	}
 
-	public create(data: object, lean = false): Promise<any> {
+	public create(
+		data: object,
+		options: CollectionInsertOneOptions & { lean: boolean } = { lean: false }
+	): Promise<any> {
 		return new Promise(async (resolve, reject) => {
 			try {
 				let wrappedDoc: any;
+
+				const { lean, ...rest } = options;
 
 				if (lean) {
 					wrappedDoc = data;
@@ -137,7 +167,7 @@ class InternalModel extends MongoInstance {
 
 				await this._schema?.executePreHooks('create', wrappedDoc, lean);
 
-				await this.collection.insertOne(lean ? wrappedDoc : wrappedDoc.data);
+				await this.collection.insertOne(lean ? wrappedDoc : wrappedDoc.data, rest);
 
 				await this._schema?.executePostHooks('create', wrappedDoc, lean);
 
@@ -166,7 +196,7 @@ class InternalModel extends MongoInstance {
 	}
 
 	private checkConnection(): Promise<boolean> {
-		return new Promise(resolve => {
+		return new Promise((resolve) => {
 			let retries = 0;
 			const timer = setInterval(() => {
 				retries++;
@@ -192,28 +222,33 @@ export type Model = {
 		data: Generic & ExtendableObject,
 		lean?: false
 	): Promise<Document<Generic & ExtendableObject>>;
-	create<Generic extends ExtendableObject>(data: Generic & ExtendableObject, lean?: true): Promise<ExtendableObject>;
-	deleteMany(filter: FilterQuery<object>): Promise<DeleteWriteOpResultObject>;
+	create<Generic extends ExtendableObject>(
+		data: Generic & ExtendableObject,
+		options: CollectionInsertOneOptions & { lean: boolean }
+	): Promise<ExtendableObject & { _id: string }>;
+	deleteMany(filter: FilterQuery<object>, options?: CommonOptions): Promise<DeleteWriteOpResultObject>;
 	findByIdAndUpdate(id: string, update: object, lean?: false): Promise<Document>;
-	findByIdAndUpdate(id: string, update: object, lean?: true): Promise<ExtendableObject>;
-	updateOne(filter: object, update: object, lean?: false): Promise<Document>;
-	updateOne(filter: object, update: object, lean?: true): Promise<ExtendableObject>;
-	findById(id: string, lean?: false): Promise<Document>;
-	findById(id: string, lean?: true): Promise<ExtendableObject>;
-	findOne(query: object, lean?: false): Promise<Document>;
-	findOne(query: object, lean?: true): Promise<ExtendableObject>;
+	findByIdAndUpdate(id: string, update: object, lean?: true): Promise<ExtendableObject & { _id: string }>;
+	updateOne(filter: FilterQuery<any>, update: object, lean?: false): Promise<Document>;
+	updateOne(filter: FilterQuery<any>, update: object, lean?: true): Promise<ExtendableObject & { _id: string }>;
+	findById(id: string, options?: FindOneOptions & { lean?: false }): Promise<Document>;
+	findById(id: string, options?: FindOneOptions & { lean?: true }): Promise<ExtendableObject & { _id: string }>;
+	findOne(query: FilterQuery<any>, options?: FindOneOptions & { lean?: false }): Promise<Document>;
+	findOne(
+		query: FilterQuery<any>,
+		options?: FindOneOptions & { lean?: true }
+	): Promise<ExtendableObject & { _id: string }>;
 	find(query: object, options?: FindOneOptions): Cursor<any>;
-	deleteOne(filter: object, lean?: boolean): Promise<DeleteWriteOpResultObject | null>;
-	findByIdAndDelete(id: string, lean?: boolean): Promise<DeleteWriteOpResultObject | null>;
+	deleteOne(
+		filter: FilterQuery<any>,
+		options?: CommonOptions & { bypassDocumentValidation?: boolean; lean: boolean }
+	): Promise<DeleteWriteOpResultObject | null>;
+	findByIdAndDelete(
+		id: string,
+		options?: CommonOptions & { bypassDocumentValidation?: boolean; lean: boolean }
+	): Promise<DeleteWriteOpResultObject | null>;
 };
 
 interface ExtendableObject {
 	[key: string]: any;
 }
-
-/**
- *  ------------ BACKLOG ------------
- *  //TODO: optimize methods
- *
- *
- */

@@ -66,28 +66,28 @@ A model gives access to collection manipulation. You can provide a [Schema](#Sce
     `javascript await model.instance(data);`
     Returns a [Document](#document).
 -   **create**
-    `javascript await model.create(data,true);`
+    `javascript await model.create(data,options);`
     Creates an entry to database and
-    returns a [Document](#document) or a plain object depending on `lean` **boolean** flag.
+    returns a [Document](#document) or a plain object depending on `options:{lean}` **boolean** flag.
 -   **deleteOne**
-    `javascript await model.deleteOne(filter,true);`
+    `javascript await model.deleteOne(filter,options);`
     Deletes the first entry from database that matches the given filter.
 -   **findOne**
-    `javascript await model.findOne(filter,true);`
-    Returns the first entry from database that matches the filter. The return value is either a [Document](#document) or a plain object depending on `lean` **boolean** flag.
+    `javascript await model.findOne(filter,options);`
+    Returns the first entry from database that matches the filter. The return value is either a [Document](#document) or a plain object depending on `options:{lean}` **boolean** flag.
 -   **updateOne**
-    `javascript await model.updateOne(filter,data,true);`
+    `javascript await model.updateOne(filter,data,options);`
     Updates an entry to database and
-    returns a [Document](#document) or a plain object depending on `lean` **boolean** flag.
+    returns a [Document](#document) or a plain object depending on `options:{lean}` **boolean** flag.
 -   **findByIdAndDelete**
-    `javascript await model.findByIdAndDelete(id,true);`
+    `javascript await model.findByIdAndDelete(id,options);`
     Deletes an entry from database that has the id given as parameter.
 -   **findById**
-    `javascript await model.findById(id,true);`
-    Returns an entry from database that matches the id given. The return value is either a [Document](#document) or a plain object depending on `lean` **boolean** flag.
+    `javascript await model.findById(id,options);`
+    Returns an entry from database that matches the id given. The return value is either a [Document](#document) or a plain object depending on `options:{lean}` **boolean** flag.
 -   **findByIdAndUpdate**
-    `javascript await model.findByIdAndUpdate(id,updateObject,true);`
-    Finds an entry based on the id provided, updates it and return a [Document](#document) or a plain object depending on `lean` **boolean** flag.
+    `javascript await model.findByIdAndUpdate(id,updateObject,options);`
+    Finds an entry based on the id provided, updates it and return a [Document](#document) or a plain object depending on `options:{lean}` **boolean** flag.
 -   **deleteMany**
     `javascript await model.deleteMany(filter);`
     Deletes multiples entries from database based on the filter provided.
@@ -152,7 +152,7 @@ const schema = new Schema();
 // it is important to be a function and not an arrow function
 // cause inside the callback you have access on the context of `hooked` object
 
-schema.pre('save', function() {
+schema.pre('save', function () {
 	console.log(this.data);
 	// or
 	console.log(this);
@@ -161,7 +161,7 @@ schema.pre('save', function() {
 	//if it returns a document or plain object
 });
 
-schema.post('save', function() {});
+schema.post('save', function () {});
 ```
 
 ## Commands
