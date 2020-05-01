@@ -1,3 +1,15 @@
+# [2.0.0](https://github.com/gkampitakis/MongoDriver/compare/v1.3.0...v2.0.0) (2020-05-01)
+
+
+### Features
+
+* expose mongodb types ([26f81ca](https://github.com/gkampitakis/MongoDriver/commit/26f81ca4237d1321f25d02a1468b42bfc64af2d3))
+
+
+### BREAKING CHANGES
+
+* merge lean with mongodb native options object
+
 # [1.3.0](https://github.com/gkampitakis/MongoDriver/compare/v1.2.0...v1.3.0) (2020-04-27)
 
 
