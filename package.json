@@ -57,7 +57,7 @@
 		"jest": "^25.1.0",
 		"mongodb-memory-server": "^6.5.1",
 		"mongoose": "^5.9.3",
-		"pino": "^5.17.0",
+		"pino": "^6.2.1",
 		"pino-pretty": "^3.6.1",
 		"prettier": "^1.19.1",
 		"pretty-quick": "^2.0.1",
