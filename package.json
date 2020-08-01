@@ -58,7 +58,7 @@
 		"mongodb-memory-server": "^6.5.1",
 		"mongoose": "^5.9.3",
 		"pino": "^6.2.1",
-		"pino-pretty": "^3.6.1",
+		"pino-pretty": "^4.1.0",
 		"prettier": "^2.0.5",
 		"pretty-quick": "^2.0.1",
 		"rimraf": "^3.0.2",
