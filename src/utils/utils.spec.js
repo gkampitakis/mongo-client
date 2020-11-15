@@ -99,19 +99,19 @@ describe('Utils', () => {
           },
           moreFields: 'test'
         }
-      },
-        object2 = {
-          nest: {
-            nestedObject: {
-              moreNested: {
-                field1: '1',
-                field2: '2',
-                field3: '3'
-              }
-            },
-            moreFields: 'test'
-          }
-        };
+      };
+      const object2 = {
+        nest: {
+          nestedObject: {
+            moreNested: {
+              field1: '1',
+              field2: '2',
+              field3: '3'
+            }
+          },
+          moreFields: 'test'
+        }
+      };
 
       expect(objectEquality(object1, object2)).toBe(true);
     });
@@ -128,19 +128,19 @@ describe('Utils', () => {
           },
           moreFields: 'test'
         }
-      },
-        object2 = {
-          nest: {
-            nestedObject: {
-              moreNested: {
-                field1: '14',
-                field2: '2',
-                field3: '3'
-              }
-            },
-            moreFields: 'test'
-          }
-        };
+      };
+      const object2 = {
+        nest: {
+          nestedObject: {
+            moreNested: {
+              field1: '14',
+              field2: '2',
+              field3: '3'
+            }
+          },
+          moreFields: 'test'
+        }
+      };
 
       expect(objectEquality(object1, object2)).toBe(false);
     });

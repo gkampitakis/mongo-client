@@ -26,11 +26,11 @@ function stripObject (document) {
 }
 
 function extractUniqueValues (schema) {
-  const result = flat(schema),
-    uniqueValues = [];
+  const result = flat(schema);
+  const uniqueValues = [];
 
   for (const field in result) {
-    const absolutePath = field.replace(new RegExp('properties.', 'g'), '');
+    const absolutePath = field.replace(/properties./g, '');
     const parse = absolutePath.split('.');
     const value = result[field];
 
