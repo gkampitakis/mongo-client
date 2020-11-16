@@ -1,7 +1,7 @@
 'use strict';
 
 const { stripObject } = require('../utils/Utils');
-const kareem = require('kareem');
+const Kareem = require('kareem');
 const Ajv = require('ajv');
 
 class Schema {
@@ -11,7 +11,7 @@ class Schema {
 
   constructor (schema, options) {
     this._schema = schema;
-    this.hooks = new kareem();
+    this.hooks = new Kareem();
     const ajv = new Ajv({ ...options, ...{ useDefaults: true, removeAdditional: true } });
     if (schema) this.validator = ajv.compile(schema);
   }
