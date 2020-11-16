@@ -7,7 +7,7 @@
   "scripts": {
     "docker:start": "docker-compose up -d",
     "docker:stop": "docker-compose down",
-    "test:integration": "jest --config jest.integration.config.js --coverage --forceExit",
+    "test:integration": "jest ./src/Document --config jest.integration.config.js --coverage --forceExit",
     "test:unit": "npm run clean && npm run lint && jest",
     "playground": "ts-node-dev --respawn --transpileOnly ./playground.ts",
     "playground:mongo": "npm run playground -- server",

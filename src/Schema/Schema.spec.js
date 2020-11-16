@@ -204,3 +204,6 @@ describe('Schema', () => {
     });
   });
 });
+
+
+//TODO: should allow additional properties

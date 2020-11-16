@@ -1,5 +1,5 @@
 {
-	"repositoryUrl": "git@github.com:gkampitakis/MongoDriver.git",
+	"repositoryUrl": "git@github.com:gkampitakis/mongo-client.git",
 	"plugins": [
 		"@semantic-release/commit-analyzer",
 		"@semantic-release/release-notes-generator",
